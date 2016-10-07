@@ -25,6 +25,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private long previousFrameNanos;
     private Canvas canvas;
     private Paint paint;
+    private boolean touch;
 
     public RoadLinePainterView(Context context) {
         this(context, null);
@@ -40,6 +41,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
         paint = new Paint();
         paint.setColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
+
+        touch = false;
 
         surfaceHolder = getHolder();
 
@@ -67,7 +70,9 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
             canvas = surfaceHolder.lockCanvas(null);
             if(canvas != null){
                 synchronized (surfaceHolder) {
-                    canvas.drawRect(0, 0, width, height, paint);
+                    if (touch) {
+                        canvas.drawRect(0, 0, width, height, paint);
+                    }
                 }
             }
         }
@@ -79,6 +84,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     }
 
     public boolean onTouchEvent(MotionEvent event) {
+        touch = true;
+
         return true;
     }
 }
