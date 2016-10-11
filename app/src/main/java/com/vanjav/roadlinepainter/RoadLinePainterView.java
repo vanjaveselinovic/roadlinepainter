@@ -25,7 +25,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private SurfaceHolder surfaceHolder;
     private long previousFrameNanos;
     private Canvas canvas;
-    private Paint paint;
+    private Paint paintBG, paintRoad, paintLine;
     private boolean touch;
     private Controller controller;
     private int currX, currY;
@@ -44,9 +44,14 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
         controller = new Controller(width);
 
-        paint = new Paint();
-        paint.setColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
-        paint.setStrokeWidth(10);
+        paintBG = new Paint();
+        paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorGrass1));
+        paintRoad = new Paint();
+        paintRoad.setColor(ContextCompat.getColor(getContext(), R.color.colorRoad1));
+        paintRoad.setStrokeWidth(100);
+        paintLine = new Paint();
+        paintLine.setColor(ContextCompat.getColor(getContext(), R.color.colorLine1));
+        paintLine.setStrokeWidth(10);
 
         touch = false;
 
@@ -80,17 +85,17 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
             canvas = surfaceHolder.lockCanvas(null);
             if(canvas != null){
                 synchronized (surfaceHolder) {
-                    canvas.drawRect(0, 0, width, height, new Paint());
+                    canvas.drawRect(0, 0, width, height, paintBG);
                     Point prevPoint, currPoint;
                     for (int i = 1; i < controller.getPoints().size(); i++) {
                         prevPoint = controller.getPoints().get(i-1);
                         currPoint = controller.getPoints().get(i);
-                        canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paint);
+                        canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintLine);
                     }
                     if (touch && controller.getPoints().size() > 0) {
                         float newX = controller.getPoints().get(controller.getPoints().size() - 1).x;
                         float newY = controller.getPoints().get(controller.getPoints().size() - 1).y;
-                        canvas.drawLine(newX, newY, currX, currY, paint);
+                        canvas.drawLine(newX, newY, currX, currY, paintLine);
                     }
                 }
             }

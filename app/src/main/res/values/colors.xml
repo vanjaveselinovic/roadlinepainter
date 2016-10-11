@@ -3,4 +3,7 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorGrass1">#87c952</color>
+    <color name="colorRoad1">#b7b4b1</color>
+    <color name="colorLine1">#edc345</color>
 </resources>
