@@ -8,6 +8,7 @@ import android.graphics.Point;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Choreographer;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -17,7 +18,7 @@ import android.view.SurfaceView;
  * Created by vveselin on 07/10/2016.
  */
 
-public class RoadLinePainterView extends SurfaceView  implements Choreographer.FrameCallback{
+public class RoadLinePainterView extends SurfaceView  implements Choreographer.FrameCallback {
     private int width, height;
     private SurfaceHolder surfaceHolder;
     private long previousFrameNanos;
@@ -26,6 +27,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private boolean touch;
     private Controller controller;
     private int currX, currY;
+    private boolean ready = false;
+    private boolean paused = false;
 
     public RoadLinePainterView(Context context) {
         this(context, null);
@@ -34,30 +37,55 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     public RoadLinePainterView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        width = displayMetrics.widthPixels;
-        height = displayMetrics.heightPixels;
+//        DisplayMetrics displayMetrics = new DisplayMetrics();
+//        ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+//        width = displayMetrics.widthPixels;
+//        height = displayMetrics.heightPixels;
 
-        controller = new Controller(width);
+        ready = true;
+    }
 
-        paintBG = new Paint();
-        paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorGrass1));
-        paintRoad = new Paint();
-        paintRoad.setColor(ContextCompat.getColor(getContext(), R.color.colorRoad1));
-        paintRoad.setStrokeWidth(100);
-        paintRoad.setStrokeCap(Paint.Cap.ROUND);
-        paintLine = new Paint();
-        paintLine.setColor(ContextCompat.getColor(getContext(), R.color.colorLine1));
-        paintLine.setStrokeWidth(10);
+    @Override
+    protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld){
+        super.onSizeChanged(xNew, yNew, xOld, yOld);
 
-        touch = false;
+        if (ready) {
+            width = xNew;
+            height = yNew;
 
-        surfaceHolder = getHolder();
+            controller = new Controller(width, height);
 
-        previousFrameNanos = System.nanoTime();
+            paintBG = new Paint();
+            paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorGrass1));
+            paintRoad = new Paint();
+            paintRoad.setColor(ContextCompat.getColor(getContext(), R.color.colorRoad1));
+            paintRoad.setStrokeWidth(200);
+            paintRoad.setStrokeCap(Paint.Cap.ROUND);
+            paintLine = new Paint();
+            paintLine.setColor(ContextCompat.getColor(getContext(), R.color.colorLine1));
+            paintLine.setStrokeWidth(20);
+            paintLine.setStrokeCap(Paint.Cap.ROUND);
 
-        Choreographer.getInstance().postFrameCallback(this);
+            touch = false;
+
+            surfaceHolder = getHolder();
+
+            previousFrameNanos = System.nanoTime();
+            Choreographer.getInstance().postFrameCallback(this);
+        }
+    }
+
+    public void pause() {
+        Choreographer.getInstance().removeFrameCallback(this);
+        paused = true;
+    }
+
+    public void resume() {
+        if (paused) {
+            previousFrameNanos = System.nanoTime();
+            Choreographer.getInstance().postFrameCallback(this);
+            paused = false;
+        }
     }
 
     @Override

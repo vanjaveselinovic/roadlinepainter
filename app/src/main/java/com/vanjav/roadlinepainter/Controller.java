@@ -12,16 +12,17 @@ import java.util.Random;
 public class Controller {
     private ArrayList<Point> linePoints, roadPoints;
     private int linePointToRemove, roadPointToRemove;
-    private int width;
+    private int width, height;
     private int crossTime;
     private Random random;
 
-    public Controller (int width) {
+    public Controller (int width, int height) {
         linePoints = new ArrayList<Point>();
         roadPoints = new ArrayList<Point>();
         linePointToRemove = 0;
         roadPointToRemove = 0;
         this.width = width;
+        this.height = height;
         crossTime = 5000;
         random = new Random();
         roadPoints.add(new Point(width/2, 500));
@@ -54,7 +55,7 @@ public class Controller {
             x = random.nextInt(lastPointInRoad.x+500-lastPointInRoad.x)+lastPointInRoad.x;
             y = plusMinus*random.nextInt(lastPointInRoad.y+250-lastPointInRoad.y)+lastPointInRoad.y;
             if (y < 100) y = 100;
-            if (y > 1000) y = 1000;
+            if (y > height - 100) y = height - 100;
             roadPoints.add(new Point(x, y));
             lastPointInRoad = roadPoints.get(roadPoints.size()-1);
         }
