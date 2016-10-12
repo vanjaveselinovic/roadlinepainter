@@ -39,43 +39,35 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     public RoadLinePainterView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-//        DisplayMetrics displayMetrics = new DisplayMetrics();
-//        ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-//        width = displayMetrics.widthPixels;
-//        height = displayMetrics.heightPixels;
+        paintBG = new Paint();
+        paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorGrass1));
+        paintRoad = new Paint();
+        paintRoad.setColor(ContextCompat.getColor(getContext(), R.color.colorRoad1));
+        paintRoad.setStrokeWidth(200);
+        paintRoad.setStrokeCap(Paint.Cap.ROUND);
+        paintLine = new Paint();
+        paintLine.setColor(ContextCompat.getColor(getContext(), R.color.colorLine1));
+        paintLine.setStrokeWidth(20);
+        paintLine.setStrokeCap(Paint.Cap.ROUND);
+        paintTest = new Paint();
+        paintTest.setColor(Color.RED);
+        paintTest.setStrokeWidth(10);
+        paintTest.setStyle(Paint.Style.STROKE);
 
-        ready = true;
+        touch = false;
+        surfaceHolder = getHolder();
     }
 
     @Override
     protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld){
         super.onSizeChanged(xNew, yNew, xOld, yOld);
+        width = xNew;
+        height = yNew;
 
-        if (ready) {
-            width = xNew;
-            height = yNew;
+        controller = new Controller(width, height);
 
-            controller = new Controller(width, height);
-
-            paintBG = new Paint();
-            paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorGrass1));
-            paintRoad = new Paint();
-            paintRoad.setColor(ContextCompat.getColor(getContext(), R.color.colorRoad1));
-            paintRoad.setStrokeWidth(200);
-            paintRoad.setStrokeCap(Paint.Cap.ROUND);
-            paintLine = new Paint();
-            paintLine.setColor(ContextCompat.getColor(getContext(), R.color.colorLine1));
-            paintLine.setStrokeWidth(20);
-            paintLine.setStrokeCap(Paint.Cap.ROUND);
-            paintTest = new Paint();
-            paintTest.setColor(Color.RED);
-            paintTest.setStrokeWidth(10);
-            paintTest.setStyle(Paint.Style.STROKE);
-
-            touch = false;
-
-            surfaceHolder = getHolder();
-        }
+        previousFrameNanos = System.nanoTime();
+        Choreographer.getInstance().postFrameCallback(this);
     }
 
     public void pause() {
@@ -121,18 +113,18 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                     canvas.drawRect(0, 0, width, height, paintBG);
 
                     PointF prevPoint, currPoint;
-
+                    /*
                     float w = 200;
                     float p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
                     float k, m;
-
+                    */
 
                     for (int i = 1; i < controller.getRoadPoints().size(); i++) {
                         prevPoint = controller.getRoadPoints().get(i-1);
                         currPoint = controller.getRoadPoints().get(i);
                         canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintRoad);
 
-
+                        /*
                         if (currPoint.y-prevPoint.y == 0) {
                             p1x = prevPoint.x;
                             p1y = prevPoint.y - w/2;
@@ -160,7 +152,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                         canvas.drawLine(p3x, p3y, p4x, p4y, paintTest);
                         canvas.drawLine(p4x, p4y, p1x, p1y, paintTest);
                         canvas.drawCircle(currPoint.x, currPoint.y, w/2, paintTest);
-
+                        */
                     }
 
                     for (int i = 1; i < controller.getLinePoints().size(); i++) {
@@ -168,11 +160,9 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                         currPoint = controller.getLinePoints().get(i);
                         canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintLine);
                     }
-                    if (touch && controller.getLinePoints().size() > 0) {
-                        float newX = controller.getLinePoints().get(controller.getLinePoints().size() - 1).x;
-                        float newY = controller.getLinePoints().get(controller.getLinePoints().size() - 1).y;
-                        canvas.drawLine(newX, newY, currX, currY, paintLine);
-                    }
+
+                    if (touch && controller.getLinePoints().size() > 0)
+                        canvas.drawLine(controller.getLinePoints().get(controller.getLinePoints().size() - 1).x, controller.getLinePoints().get(controller.getLinePoints().size() - 1).y, currX, currY, paintLine);
                 }
             }
         }

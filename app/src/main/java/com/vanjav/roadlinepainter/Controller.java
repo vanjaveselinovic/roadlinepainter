@@ -26,7 +26,7 @@ public class Controller {
         this.height = height;
         crossTime = 5000;
         random = new Random();
-        roadPoints.add(new PointF(width/2, 500));
+        roadPoints.add(new PointF(width/2, height/2));
         initRoad();
     }
 
@@ -46,7 +46,7 @@ public class Controller {
         roadPoints.add(new PointF(x, y));
     }
 
-    private void initRoad() {
+    public void initRoad() {
         PointF lastPointInRoad = roadPoints.get(roadPoints.size()-1);
         float plusMinus = 0, x, y;
 
@@ -87,35 +87,35 @@ public class Controller {
         float k, m;
         float aRoad, aPoint;
 
-        lx = linePoints.get(linePoints.size()-1).x;
-        ly = linePoints.get(linePoints.size()-1).y;
+        if (linePoints.size() > 0) {
+            lx = linePoints.get(linePoints.size() - 1).x;
+            ly = linePoints.get(linePoints.size() - 1).y;
 
-        for (int i = 1; i < roadPoints.size(); i++) {
-            prevPoint = roadPoints.get(i-1);
-            currPoint = roadPoints.get(i);
+            for (int i = 1; i < roadPoints.size(); i++) {
+                prevPoint = roadPoints.get(i - 1);
+                currPoint = roadPoints.get(i);
 
-            if (currPoint.y-prevPoint.y == 0) {
-                p1x = prevPoint.x;
-                p1y = prevPoint.y - w/2;
-                p2x = currPoint.x;
-                p2y = currPoint.y - w/2;
-                p3x = currPoint.x;
-                p3y = currPoint.y + w/2;
-                p4x = prevPoint.x;
-                p4y = prevPoint.y + w/2;
-            }
-            else {
-                m = -1 * ((currPoint.x - prevPoint.x) / (currPoint.y - prevPoint.y));
-                k = (float) (w / (2 * Math.sqrt(1 + Math.pow(m, 2))));
-                p1x = prevPoint.x + k;
-                p1y = prevPoint.y + k * m;
-                p2x = currPoint.x + k;
-                p2y = currPoint.y + k * m;
-                p3x = currPoint.x - k;
-                p3y = currPoint.y - k * m;
-                p4x = prevPoint.x - k;
-                p4y = prevPoint.y - k * m;
-            }
+                if (currPoint.y - prevPoint.y == 0) {
+                    p1x = prevPoint.x;
+                    p1y = prevPoint.y - w / 2;
+                    p2x = currPoint.x;
+                    p2y = currPoint.y - w / 2;
+                    p3x = currPoint.x;
+                    p3y = currPoint.y + w / 2;
+                    p4x = prevPoint.x;
+                    p4y = prevPoint.y + w / 2;
+                } else {
+                    m = -1 * ((currPoint.x - prevPoint.x) / (currPoint.y - prevPoint.y));
+                    k = (float) (w / (2 * Math.sqrt(1 + Math.pow(m, 2))));
+                    p1x = prevPoint.x + k;
+                    p1y = prevPoint.y + k * m;
+                    p2x = currPoint.x + k;
+                    p2y = currPoint.y + k * m;
+                    p3x = currPoint.x - k;
+                    p3y = currPoint.y - k * m;
+                    p4x = prevPoint.x - k;
+                    p4y = prevPoint.y - k * m;
+                }
 
 //            aRoad = (float) Math.abs(0.5*((p1x*p2y + p2x*p3y + p3x*p4y + p4x*p1y)-(p1y*p2x + p2y*p3x + p3y*p4x + p4y*p1x)));
 //
@@ -126,31 +126,34 @@ public class Controller {
 //
 //            if (aPoint <= aRoad) return true;
 
-            float a, b, c, d1, d2, d3, d4;
+                float a, b, c, d1, d2, d3, d4;
 
-            a = -1*(p2y-p1y);
-            b = p2x - p1x;
-            c = -1*(a*p1x + b*p1y);
-            d1 = a*lx + b*ly + c;
+                a = -1 * (p2y - p1y);
+                b = p2x - p1x;
+                c = -1 * (a * p1x + b * p1y);
+                d1 = a * lx + b * ly + c;
 
-            a = -1*(p3y-p2y);
-            b = p3x - p2x;
-            c = -1*(a*p2x + b*p2y);
-            d2 = a*lx + b*ly + c;
+                a = -1 * (p3y - p2y);
+                b = p3x - p2x;
+                c = -1 * (a * p2x + b * p2y);
+                d2 = a * lx + b * ly + c;
 
-            a = -1*(p4y-p3y);
-            b = p4x - p3x;
-            c = -1*(a*p3x + b*p3y);
-            d3 = a*lx + b*ly + c;
+                a = -1 * (p4y - p3y);
+                b = p4x - p3x;
+                c = -1 * (a * p3x + b * p3y);
+                d3 = a * lx + b * ly + c;
 
-            a = -1*(p1y-p4y);
-            b = p1x - p4x;
-            c = -1*(a*p4x + b*p4y);
-            d4 = a*lx + b*ly + c;
+                a = -1 * (p1y - p4y);
+                b = p1x - p4x;
+                c = -1 * (a * p4x + b * p4y);
+                d4 = a * lx + b * ly + c;
 
-            if ((d1 >= 0 && d2 >= 0 && d3 >= 0 && d4 >= 0) || (d1 <= 0 && d2 <= 0 && d3 <= 0 && d4 <= 0)) return true;
+                if ((d1 >= 0 && d2 >= 0 && d3 >= 0 && d4 >= 0) || (d1 <= 0 && d2 <= 0 && d3 <= 0 && d4 <= 0))
+                    return true;
 
-            if (Math.pow(lx-prevPoint.x, 2)+Math.pow(ly-prevPoint.y, 2) <= Math.pow(100, 2)) return true;
+                if (Math.pow(lx - prevPoint.x, 2) + Math.pow(ly - prevPoint.y, 2) <= Math.pow(100, 2))
+                    return true;
+            }
         }
         
         return false;
