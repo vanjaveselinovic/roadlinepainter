@@ -3,8 +3,10 @@ package com.vanjav.roadlinepainter;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -23,10 +25,10 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private SurfaceHolder surfaceHolder;
     private long previousFrameNanos;
     private Canvas canvas;
-    private Paint paintBG, paintRoad, paintLine;
+    private Paint paintBG, paintRoad, paintLine, paintTest;
     private boolean touch;
     private Controller controller;
-    private int currX, currY;
+    private float currX, currY;
     private boolean ready = false;
     private boolean paused = false;
 
@@ -65,13 +67,14 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
             paintLine.setColor(ContextCompat.getColor(getContext(), R.color.colorLine1));
             paintLine.setStrokeWidth(20);
             paintLine.setStrokeCap(Paint.Cap.ROUND);
+            paintTest = new Paint();
+            paintTest.setColor(Color.RED);
+            paintTest.setStrokeWidth(10);
+            paintTest.setStyle(Paint.Style.STROKE);
 
             touch = false;
 
             surfaceHolder = getHolder();
-
-            previousFrameNanos = System.nanoTime();
-            Choreographer.getInstance().postFrameCallback(this);
         }
     }
 
@@ -86,6 +89,10 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
             Choreographer.getInstance().postFrameCallback(this);
             paused = false;
         }
+    }
+
+    public void gameOver() {
+        Choreographer.getInstance().removeFrameCallback(this);
     }
 
     @Override
@@ -103,7 +110,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
             controller.addLinePoint(currX, currY);
         }
 
-        controller.update(deltaTimeNanos);
+        if (!controller.update(deltaTimeNanos)) gameOver();
     }
 
     private void draw() {
@@ -113,12 +120,47 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                 synchronized (surfaceHolder) {
                     canvas.drawRect(0, 0, width, height, paintBG);
 
-                    Point prevPoint, currPoint;
+                    PointF prevPoint, currPoint;
+
+                    float w = 200;
+                    float p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
+                    float k, m;
+
 
                     for (int i = 1; i < controller.getRoadPoints().size(); i++) {
                         prevPoint = controller.getRoadPoints().get(i-1);
                         currPoint = controller.getRoadPoints().get(i);
                         canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintRoad);
+
+
+                        if (currPoint.y-prevPoint.y == 0) {
+                            p1x = prevPoint.x;
+                            p1y = prevPoint.y - w/2;
+                            p2x = currPoint.x;
+                            p2y = currPoint.y - w/2;
+                            p3x = currPoint.x;
+                            p3y = currPoint.y + w/2;
+                            p4x = prevPoint.x;
+                            p4y = prevPoint.y + w/2;
+                        }
+                        else {
+                            m = (float) -1 * ((currPoint.x - prevPoint.x) / (currPoint.y - prevPoint.y));
+                            k = (float) (w / (2 * Math.sqrt(1 + Math.pow(m, 2))));
+                            p1x = prevPoint.x + k;
+                            p1y = prevPoint.y + k * m;
+                            p2x = currPoint.x + k;
+                            p2y = currPoint.y + k * m;
+                            p3x = currPoint.x - k;
+                            p3y = currPoint.y - k * m;
+                            p4x = prevPoint.x - k;
+                            p4y = prevPoint.y - k * m;
+                        }
+                        canvas.drawLine(p1x, p1y, p2x, p2y, paintTest);
+                        canvas.drawLine(p2x, p2y, p3x, p3y, paintTest);
+                        canvas.drawLine(p3x, p3y, p4x, p4y, paintTest);
+                        canvas.drawLine(p4x, p4y, p1x, p1y, paintTest);
+                        canvas.drawCircle(currPoint.x, currPoint.y, w/2, paintTest);
+
                     }
 
                     for (int i = 1; i < controller.getLinePoints().size(); i++) {
@@ -142,13 +184,18 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     }
 
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN)
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
             touch = true;
-        else if (event.getAction() == MotionEvent.ACTION_UP)
+            previousFrameNanos = System.nanoTime();
+            Choreographer.getInstance().postFrameCallback(this);
+        }
+        else if (event.getAction() == MotionEvent.ACTION_UP) {
             touch = false;
+            gameOver();
+        }
 
-        currX = (int) event.getX();
-        currY = (int) event.getY();
+        currX = event.getX();
+        currY = event.getY();
 
         return true;
     }
