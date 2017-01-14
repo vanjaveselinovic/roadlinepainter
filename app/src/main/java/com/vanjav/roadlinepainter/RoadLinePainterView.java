@@ -29,8 +29,9 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private boolean touch;
     private Controller controller;
     private float currX, currY;
-    private boolean ready = false;
     private boolean paused = false;
+    private boolean gameStarted = false;
+    private boolean gameOver = false;
 
     public RoadLinePainterView(Context context) {
         this(context, null);
@@ -71,8 +72,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     }
 
     public void pause() {
-        Choreographer.getInstance().removeFrameCallback(this);
         paused = true;
+        gameOver();
     }
 
     public void resume() {
@@ -85,6 +86,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
     public void gameOver() {
         Choreographer.getInstance().removeFrameCallback(this);
+        if (gameStarted)
+            gameOver = true;
     }
 
     @Override
@@ -102,7 +105,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
             controller.addLinePoint(currX, currY);
         }
 
-        if (!controller.update(deltaTimeNanos)) gameOver();
+        if (!controller.update(deltaTimeNanos))
+            gameOver();
     }
 
     private void draw() {
@@ -113,46 +117,11 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                     canvas.drawRect(0, 0, width, height, paintBG);
 
                     PointF prevPoint, currPoint;
-                    /*
-                    float w = 200;
-                    float p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
-                    float k, m;
-                    */
 
                     for (int i = 1; i < controller.getRoadPoints().size(); i++) {
                         prevPoint = controller.getRoadPoints().get(i-1);
                         currPoint = controller.getRoadPoints().get(i);
                         canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintRoad);
-
-                        /*
-                        if (currPoint.y-prevPoint.y == 0) {
-                            p1x = prevPoint.x;
-                            p1y = prevPoint.y - w/2;
-                            p2x = currPoint.x;
-                            p2y = currPoint.y - w/2;
-                            p3x = currPoint.x;
-                            p3y = currPoint.y + w/2;
-                            p4x = prevPoint.x;
-                            p4y = prevPoint.y + w/2;
-                        }
-                        else {
-                            m = (float) -1 * ((currPoint.x - prevPoint.x) / (currPoint.y - prevPoint.y));
-                            k = (float) (w / (2 * Math.sqrt(1 + Math.pow(m, 2))));
-                            p1x = prevPoint.x + k;
-                            p1y = prevPoint.y + k * m;
-                            p2x = currPoint.x + k;
-                            p2y = currPoint.y + k * m;
-                            p3x = currPoint.x - k;
-                            p3y = currPoint.y - k * m;
-                            p4x = prevPoint.x - k;
-                            p4y = prevPoint.y - k * m;
-                        }
-                        canvas.drawLine(p1x, p1y, p2x, p2y, paintTest);
-                        canvas.drawLine(p2x, p2y, p3x, p3y, paintTest);
-                        canvas.drawLine(p3x, p3y, p4x, p4y, paintTest);
-                        canvas.drawLine(p4x, p4y, p1x, p1y, paintTest);
-                        canvas.drawCircle(currPoint.x, currPoint.y, w/2, paintTest);
-                        */
                     }
 
                     for (int i = 1; i < controller.getLinePoints().size(); i++) {
@@ -174,12 +143,14 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     }
 
     public boolean onTouchEvent(MotionEvent event) {
+        if (gameOver) return false;
+
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            gameStarted = true;
             touch = true;
             previousFrameNanos = System.nanoTime();
             Choreographer.getInstance().postFrameCallback(this);
-        }
-        else if (event.getAction() == MotionEvent.ACTION_UP) {
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
             touch = false;
             gameOver();
         }

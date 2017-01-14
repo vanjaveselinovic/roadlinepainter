@@ -117,15 +117,6 @@ public class Controller {
                     p4y = prevPoint.y - k * m;
                 }
 
-//            aRoad = (float) Math.abs(0.5*((p1x*p2y + p2x*p3y + p3x*p4y + p4x*p1y)-(p1y*p2x + p2y*p3x + p3y*p4x + p4y*p1x)));
-//
-//            aPoint = (float) Math.abs(0.5*((lx*p1y + p1x*p2y + p2x*ly)-(ly*p1x + p1y*p2x + p2y*lx)));
-//            aPoint+= (float) Math.abs(0.5*((lx*p2y + p2x*p3y + p3x*ly)-(ly*p2x + p2y*p3x + p3y*lx)));
-//            aPoint+= (float) Math.abs(0.5*((lx*p3y + p3x*p4y + p4x*ly)-(ly*p3x + p3y*p4x + p4y*lx)));
-//            aPoint+= (float) Math.abs(0.5*((lx*p4y + p4x*p1y + p1x*ly)-(ly*p4x + p4y*p1x + p1y*lx)));
-//
-//            if (aPoint <= aRoad) return true;
-
                 float a, b, c, d1, d2, d3, d4;
 
                 a = -1 * (p2y - p1y);
