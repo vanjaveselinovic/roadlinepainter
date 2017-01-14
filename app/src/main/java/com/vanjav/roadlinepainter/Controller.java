@@ -24,7 +24,7 @@ public class Controller {
         roadPointToRemove = 0;
         this.width = width;
         this.height = height;
-        crossTime = 1500;
+        crossTime = 1000;
         random = new Random();
         roadPoints.add(new PointF(width/2, height/2));
         initRoad();
