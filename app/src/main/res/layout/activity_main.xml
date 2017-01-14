@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:orientation="vertical"
@@ -10,5 +10,29 @@
     <com.vanjav.roadlinepainter.RoadLinePainterView
         android:id="@+id/road_line_painter_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-</LinearLayout>
+        android:layout_height="match_parent"
+        />
+
+    <LinearLayout
+        android:id="@+id/game_over_container"
+        android:orientation="vertical"
+        android:layout_centerVertical="true"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Game Over"
+            android:textAlignment="center"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="restart"
+            />
+    </LinearLayout>
+</RelativeLayout>

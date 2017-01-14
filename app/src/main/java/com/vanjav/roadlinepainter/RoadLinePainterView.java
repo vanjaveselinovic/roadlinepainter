@@ -15,6 +15,11 @@ import android.view.Choreographer;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 /**
  * Created by vveselin on 07/10/2016.
@@ -86,8 +91,10 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
     public void gameOver() {
         Choreographer.getInstance().removeFrameCallback(this);
-        if (gameStarted)
+        if (gameStarted) {
             gameOver = true;
+            ((View) getParent()).findViewById(R.id.game_over_container).setVisibility(VISIBLE);
+        }
     }
 
     @Override
