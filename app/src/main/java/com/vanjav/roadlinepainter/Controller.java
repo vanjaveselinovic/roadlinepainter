@@ -26,7 +26,7 @@ public class Controller {
         this.height = height;
         crossTime = 1000;
         random = new Random();
-        roadPoints.add(new PointF(width/2, height/2));
+        genRoad();
         initRoad();
     }
 
@@ -44,6 +44,11 @@ public class Controller {
 
     public void addRoadPoint(float x, float y) {
         roadPoints.add(new PointF(x, y));
+    }
+
+    public void genRoad() {
+        roadPoints.add(new PointF(width/2, height/2));
+        roadPoints.add(new PointF(width+width/2, height/2));
     }
 
     public void initRoad() {
