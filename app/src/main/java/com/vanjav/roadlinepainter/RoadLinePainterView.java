@@ -37,6 +37,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private boolean paused = false;
     private boolean gameStarted = false;
     private boolean gameOver = false;
+    private boolean pausedBeforeStarting = false;
 
     public RoadLinePainterView(Context context) {
         this(context, null);
@@ -78,14 +79,15 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
     public void pause() {
         paused = true;
+        if (!gameStarted) pausedBeforeStarting = true;
         gameOver();
     }
 
     public void resume() {
         if (paused) {
+            paused = false;
             previousFrameNanos = System.nanoTime();
             Choreographer.getInstance().postFrameCallback(this);
-            paused = false;
         }
     }
 
@@ -111,12 +113,15 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     }
 
     private void update(long deltaTimeNanos) {
-        if (touch) {
-            controller.addLinePoint(currX, currY);
-        }
+        if (!gameOver && !pausedBeforeStarting) {
+            if (touch) {
+                controller.addLinePoint(currX, currY);
+            }
 
-        if (!controller.update(deltaTimeNanos))
-            gameOver();
+            if (!controller.update(deltaTimeNanos))
+                gameOver();
+        }
+        pausedBeforeStarting = false;
     }
 
     private void draw() {

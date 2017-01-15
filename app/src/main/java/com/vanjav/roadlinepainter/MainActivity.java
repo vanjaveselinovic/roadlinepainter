@@ -27,8 +27,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        super.onPause();
         roadLinePainterView.pause();
+        super.onPause();
     }
 
     @Override
