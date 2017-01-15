@@ -30,7 +30,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private SurfaceHolder surfaceHolder;
     private long previousFrameNanos;
     private Canvas canvas;
-    private Paint paintBG, paintRoad, paintLine, paintTest;
+    private Paint paintBG, paintRoad, paintLine, paintText;
     private boolean touch;
     private Controller controller;
     private float currX, currY;
@@ -48,18 +48,21 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
         paintBG = new Paint();
         paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorGrass1));
+
         paintRoad = new Paint();
         paintRoad.setColor(ContextCompat.getColor(getContext(), R.color.colorRoad1));
         paintRoad.setStrokeWidth(200);
         paintRoad.setStrokeCap(Paint.Cap.ROUND);
+
         paintLine = new Paint();
         paintLine.setColor(ContextCompat.getColor(getContext(), R.color.colorLine1));
         paintLine.setStrokeWidth(20);
         paintLine.setStrokeCap(Paint.Cap.ROUND);
-        paintTest = new Paint();
-        paintTest.setColor(Color.RED);
-        paintTest.setStrokeWidth(10);
-        paintTest.setStyle(Paint.Style.STROKE);
+
+        paintText = new Paint();
+        paintText.setColor(Color.BLACK);
+        paintText.setTextSize(50f);
+        paintText.setTextAlign(Paint.Align.CENTER);
 
         touch = false;
         surfaceHolder = getHolder();
@@ -147,6 +150,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
                     if (touch && controller.getLinePoints().size() > 0)
                         canvas.drawLine(controller.getLinePoints().get(controller.getLinePoints().size() - 1).x, controller.getLinePoints().get(controller.getLinePoints().size() - 1).y, currX, currY, paintLine);
+
+                    canvas.drawText(""+Math.round(controller.getScore()*10.0)/10.0, width/2, 50, paintText);
                 }
             }
         }

@@ -16,6 +16,7 @@ public class Controller {
     private int width, height;
     private int crossTime;
     private Random random;
+    private float score;
 
     public Controller (int width, int height) {
         linePoints = new ArrayList<PointF>();
@@ -26,6 +27,8 @@ public class Controller {
         this.height = height;
         crossTime = 1000;
         random = new Random();
+        score = 0;
+
         genRoad();
         initRoad();
     }
@@ -44,6 +47,14 @@ public class Controller {
 
     public void addRoadPoint(float x, float y) {
         roadPoints.add(new PointF(x, y));
+    }
+
+    public float getScore() {
+        return score;
+    }
+
+    public void updateScore(float x) {
+        score += x/1000.0;
     }
 
     public void genRoad() {
@@ -69,6 +80,8 @@ public class Controller {
 
     public boolean update(float deltaTimeNanos) {
         initRoad();
+
+        updateScore((float) width*(deltaTimeNanos/crossTime));
 
         if (roadPoints.size() > 0 && roadPoints.get(0).x < -1*width)
             roadPoints.subList(0, roadPointToRemove).clear();
