@@ -93,7 +93,10 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         Choreographer.getInstance().removeFrameCallback(this);
         if (gameStarted) {
             gameOver = true;
-            ((View) getParent()).findViewById(R.id.game_over_container).setVisibility(VISIBLE);
+            View view = ((View) getParent()).findViewById(R.id.game_over_container);
+            view.setVisibility(VISIBLE);
+            view.setAlpha(0.0f);
+            view.animate().setDuration(200).alpha(1.0f);
         }
     }
 
