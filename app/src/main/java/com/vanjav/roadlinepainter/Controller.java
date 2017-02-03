@@ -3,6 +3,7 @@ package com.vanjav.roadlinepainter;
 import android.graphics.Point;
 import android.graphics.PointF;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -18,6 +19,10 @@ public class Controller {
     private Random random;
     private float score;
 
+    /* zone 1 */
+    private ArrayList<PointF> flowerPoints, smallShrubPoints, bigShrubPoints;
+    private int flowerPointToRemove, smallShrubPointToRemove, bigShrubPointToRemove;
+
     public Controller (int width, int height) {
         linePoints = new ArrayList<PointF>();
         roadPoints = new ArrayList<PointF>();
@@ -29,8 +34,13 @@ public class Controller {
         random = new Random();
         score = 0;
 
-        genRoad();
+        /* zone 1* */
+        flowerPoints = new ArrayList<PointF>();
+        smallShrubPoints = new ArrayList<PointF>();
+        bigShrubPoints = new ArrayList<PointF>();
+
         initRoad();
+        genRoad();
     }
 
     public ArrayList<PointF> getLinePoints() {
@@ -40,6 +50,14 @@ public class Controller {
     public ArrayList<PointF> getRoadPoints() {
         return roadPoints;
     }
+
+    public ArrayList<PointF> getFlowerPoints() {
+        return flowerPoints;
+    }
+
+    public ArrayList<PointF> getSmallShrubPoints() { return smallShrubPoints; }
+
+    public ArrayList<PointF> getBigShrubPoints() { return bigShrubPoints; }
 
     public void addLinePoint(float x, float y) {
         linePoints.add(new PointF(x, y));
@@ -57,12 +75,12 @@ public class Controller {
         score += x/1000.0;
     }
 
-    public void genRoad() {
+    public void initRoad() {
         roadPoints.add(new PointF(width/2, height/2));
         roadPoints.add(new PointF(width+width/2, height/2));
     }
 
-    public void initRoad() {
+    public void genRoad() {
         PointF lastPointInRoad = roadPoints.get(roadPoints.size()-1);
         float plusMinus = 0, x, y;
 
@@ -75,11 +93,68 @@ public class Controller {
             if (y > height - 100) y = height - 100;
             roadPoints.add(new PointF(x, y));
             lastPointInRoad = roadPoints.get(roadPoints.size()-1);
+            genItems(x, y);
+        }
+    }
+
+    public void genItems(float x, float y) {
+        int numItemsToAdd = random.nextInt(7);
+
+        for (int i = 0; i < numItemsToAdd; i++) {
+            flowerPoints.add(new PointF(
+                    x-250 + random.nextFloat()*500,
+                    y+300 + random.nextFloat()*250
+            ));
+        }
+
+        numItemsToAdd = random.nextInt(7);
+
+        for (int i = 0; i < numItemsToAdd; i++) {
+            flowerPoints.add(new PointF(
+                    x-250 + random.nextFloat()*500,
+                    y-300 - random.nextFloat()*250
+            ));
+        }
+
+        numItemsToAdd = random.nextInt(3);
+
+        for (int i = 0; i < numItemsToAdd; i++) {
+            smallShrubPoints.add(new PointF(
+                    x-500 + random.nextFloat()*1000,
+                    y+600 + random.nextFloat()*250
+            ));
+        }
+
+        numItemsToAdd = random.nextInt(3);
+
+        for (int i = 0; i < numItemsToAdd; i++) {
+            smallShrubPoints.add(new PointF(
+                    x-500 + random.nextFloat()*1000,
+                    y-600 - random.nextFloat()*250
+            ));
+        }
+
+        numItemsToAdd = random.nextInt(2);
+
+        for (int i = 0; i < numItemsToAdd; i++) {
+            bigShrubPoints.add(new PointF(
+                    x-750 + random.nextFloat()*1000,
+                    y+1000 + random.nextFloat()*250
+            ));
+        }
+
+        numItemsToAdd = random.nextInt(2);
+
+        for (int i = 0; i < numItemsToAdd; i++) {
+            bigShrubPoints.add(new PointF(
+                    x-750 + random.nextFloat()*1000,
+                    y-1000 - random.nextFloat()*250
+            ));
         }
     }
 
     public boolean update(float deltaTimeNanos) {
-        initRoad();
+        genRoad();
 
         updateScore((float) width*(deltaTimeNanos/crossTime));
 
@@ -97,6 +172,33 @@ public class Controller {
         for (int i = 0; i < linePoints.size(); i++) {
             linePoints.get(i).offset((int) (-1*width*(deltaTimeNanos/crossTime)), 0);
             if (linePoints.get(i).x < -1*width) linePointToRemove = i;
+        }
+
+        if (flowerPoints.size() > 0) {
+            flowerPoints.subList(0, flowerPointToRemove).clear();
+        }
+
+        for (int i = 0; i < flowerPoints.size(); i++) {
+            flowerPoints.get(i).offset((int) (-1*width*(deltaTimeNanos/crossTime)), 0);
+            if (flowerPoints.get(i).x < -1*width) flowerPointToRemove = i;
+        }
+
+        if (smallShrubPoints.size() > 0) {
+            smallShrubPoints.subList(0, smallShrubPointToRemove).clear();
+        }
+
+        for (int i = 0; i < smallShrubPoints.size(); i++) {
+            smallShrubPoints.get(i).offset((int) (-1*width*(deltaTimeNanos/crossTime)), 0);
+            if (smallShrubPoints.get(i).x < -1*width) smallShrubPointToRemove = i;
+        }
+
+        if (bigShrubPoints.size() > 0) {
+            bigShrubPoints.subList(0, bigShrubPointToRemove).clear();
+        }
+
+        for (int i = 0; i < bigShrubPoints.size(); i++) {
+            bigShrubPoints.get(i).offset((int) (-1*width*(deltaTimeNanos/crossTime)), 0);
+            if (bigShrubPoints.get(i).x < -1*width) bigShrubPointToRemove = i;
         }
 
         PointF prevPoint, currPoint;

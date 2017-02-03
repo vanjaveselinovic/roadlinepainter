@@ -30,7 +30,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private SurfaceHolder surfaceHolder;
     private long previousFrameNanos;
     private Canvas canvas;
-    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText;
+    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText, paintZone1Shrub;
     private boolean touch;
     private Controller controller;
     private float currX, currY;
@@ -46,6 +46,12 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     public RoadLinePainterView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        paintText = new Paint();
+        paintText.setColor(Color.BLACK);
+        paintText.setTextSize(50f);
+        paintText.setTextAlign(Paint.Align.CENTER);
+
+        /* zone 1 */
         paintBG = new Paint();
         paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Grass1));
 
@@ -64,10 +70,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         paintLine.setStrokeWidth(20);
         paintLine.setStrokeCap(Paint.Cap.ROUND);
 
-        paintText = new Paint();
-        paintText.setColor(Color.BLACK);
-        paintText.setTextSize(50f);
-        paintText.setTextAlign(Paint.Align.CENTER);
+        paintZone1Shrub = new Paint();
+        paintZone1Shrub.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Bushes));
 
         touch = false;
         surfaceHolder = getHolder();
@@ -147,6 +151,11 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                         canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintOutline);
                     }
 
+                    for (int i = 1; i < controller.getFlowerPoints().size(); i++) {
+                        currPoint = controller.getFlowerPoints().get(i);
+                        canvas.drawPoint(currPoint.x, currPoint.y, paintLine);
+                    }
+
                     for (int i = 1; i < controller.getRoadPoints().size(); i++) {
                         prevPoint = controller.getRoadPoints().get(i-1);
                         currPoint = controller.getRoadPoints().get(i);
@@ -157,6 +166,16 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                         prevPoint = controller.getLinePoints().get(i-1);
                         currPoint = controller.getLinePoints().get(i);
                         canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintLine);
+                    }
+
+                    for (int i =1; i < controller.getSmallShrubPoints().size(); i++) {
+                        currPoint = controller.getSmallShrubPoints().get(i);
+                        canvas.drawCircle(currPoint.x, currPoint.y, 100, paintZone1Shrub);
+                    }
+
+                    for (int i =1; i < controller.getBigShrubPoints().size(); i++) {
+                        currPoint = controller.getBigShrubPoints().get(i);
+                        canvas.drawCircle(currPoint.x, currPoint.y, 250, paintZone1Shrub);
                     }
 
                     if (touch && controller.getLinePoints().size() > 0)
