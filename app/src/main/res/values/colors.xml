@@ -3,7 +3,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="colorGrass1">#87c952</color>
-    <color name="colorRoad1">#9e9c9a</color>
-    <color name="colorLine1">#edc345</color>
+    <color name="colorZone1Grass1">#75b648</color>
+    <color name="colorZone1Grass2">#6eaf41</color>
+    <color name="colorZone1Bushes">#5f9f33</color>
+    <color name="colorZone1Road">#909090</color>
+    <color name="colorZone1Line">#edc345</color>
 </resources>

@@ -3,9 +3,9 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorGrass1</item>
-        <item name="colorPrimaryDark">@color/colorGrass1</item>
-        <item name="android:colorBackground">@color/colorGrass1</item>
+        <item name="colorPrimary">@color/colorZone1Grass1</item>
+        <item name="colorPrimaryDark">@color/colorZone1Grass1</item>
+        <item name="android:colorBackground">@color/colorZone1Grass1</item>
     </style>
 
 </resources>

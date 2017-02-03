@@ -30,7 +30,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private SurfaceHolder surfaceHolder;
     private long previousFrameNanos;
     private Canvas canvas;
-    private Paint paintBG, paintRoad, paintLine, paintText;
+    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText;
     private boolean touch;
     private Controller controller;
     private float currX, currY;
@@ -47,15 +47,20 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         super(context, attrs);
 
         paintBG = new Paint();
-        paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorGrass1));
+        paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Grass1));
 
         paintRoad = new Paint();
-        paintRoad.setColor(ContextCompat.getColor(getContext(), R.color.colorRoad1));
+        paintRoad.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Road));
         paintRoad.setStrokeWidth(200);
         paintRoad.setStrokeCap(Paint.Cap.ROUND);
 
+        paintOutline = new Paint();
+        paintOutline.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Grass2));
+        paintOutline.setStrokeWidth(350);
+        paintOutline.setStrokeCap(Paint.Cap.ROUND);
+
         paintLine = new Paint();
-        paintLine.setColor(ContextCompat.getColor(getContext(), R.color.colorLine1));
+        paintLine.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Line));
         paintLine.setStrokeWidth(20);
         paintLine.setStrokeCap(Paint.Cap.ROUND);
 
@@ -135,6 +140,12 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                     canvas.drawRect(0, 0, width, height, paintBG);
 
                     PointF prevPoint, currPoint;
+
+                    for (int i = 1; i < controller.getRoadPoints().size(); i++) {
+                        prevPoint = controller.getRoadPoints().get(i-1);
+                        currPoint = controller.getRoadPoints().get(i);
+                        canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintOutline);
+                    }
 
                     for (int i = 1; i < controller.getRoadPoints().size(); i++) {
                         prevPoint = controller.getRoadPoints().get(i-1);
