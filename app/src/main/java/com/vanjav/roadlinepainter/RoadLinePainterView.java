@@ -2,6 +2,8 @@ package com.vanjav.roadlinepainter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -31,6 +33,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private long previousFrameNanos;
     private Canvas canvas;
     private Paint paintBG, paintRoad, paintOutline, paintLine, paintText, paintZone1Shrub;
+    private Bitmap zone1SmallShrub1, zone1BigShrub1, zone1Base;
     private boolean touch;
     private Controller controller;
     private float currX, currY;
@@ -38,6 +41,9 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private boolean gameStarted = false;
     private boolean gameOver = false;
     private boolean pausedBeforeStarting = false;
+
+    private Bitmap bitmapL, bitmapR;
+    private Canvas canvasL, canvasR;
 
     public RoadLinePainterView(Context context) {
         this(context, null);
@@ -53,7 +59,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
         /* zone 1 */
         paintBG = new Paint();
-        paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Grass1));
+        paintBG.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Grass2));
 
         paintRoad = new Paint();
         paintRoad.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Road));
@@ -73,6 +79,13 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         paintZone1Shrub = new Paint();
         paintZone1Shrub.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Bushes));
 
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+        zone1SmallShrub1 = BitmapFactory.decodeResource(getResources(), R.drawable.zone1smallshrub1, options);
+        zone1BigShrub1 = BitmapFactory.decodeResource(getResources(), R.drawable.zone1bigshrub1, options);
+        zone1Base = BitmapFactory.decodeResource(getResources(), R.drawable.zone1base, options);
+
         touch = false;
         surfaceHolder = getHolder();
     }
@@ -82,6 +95,12 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         super.onSizeChanged(xNew, yNew, xOld, yOld);
         width = xNew;
         height = yNew;
+
+        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+        bitmapL = Bitmap.createBitmap(width, height, conf);
+        bitmapR = Bitmap.createBitmap(width, height, conf);
+        canvasL = new Canvas(bitmapL);
+        canvasR = new Canvas(bitmapR);
 
         controller = new Controller(width, height);
 
@@ -141,41 +160,22 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
             canvas = surfaceHolder.lockCanvas(null);
             if(canvas != null){
                 synchronized (surfaceHolder) {
-                    canvas.drawRect(0, 0, width, height, paintBG);
+                    if (controller.getCanvasLpos() <= -1*width) {
+                        controller.setCanvasLpos(0);
+                        controller.setCanvasRpos(width);
+
+                        drawOnCanvas(canvasL, 0);
+                        drawOnCanvas(canvasR, width);
+                    }
+                    canvas.drawBitmap(bitmapL, controller.getCanvasLpos(), 0, null);
+                    canvas.drawBitmap(bitmapR, controller.getCanvasRpos(), 0, null);
 
                     PointF prevPoint, currPoint;
-
-                    for (int i = 1; i < controller.getRoadPoints().size(); i++) {
-                        prevPoint = controller.getRoadPoints().get(i-1);
-                        currPoint = controller.getRoadPoints().get(i);
-                        canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintOutline);
-                    }
-
-                    for (int i = 1; i < controller.getFlowerPoints().size(); i++) {
-                        currPoint = controller.getFlowerPoints().get(i);
-                        canvas.drawPoint(currPoint.x, currPoint.y, paintLine);
-                    }
-
-                    for (int i = 1; i < controller.getRoadPoints().size(); i++) {
-                        prevPoint = controller.getRoadPoints().get(i-1);
-                        currPoint = controller.getRoadPoints().get(i);
-                        canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintRoad);
-                    }
 
                     for (int i = 1; i < controller.getLinePoints().size(); i++) {
                         prevPoint = controller.getLinePoints().get(i-1);
                         currPoint = controller.getLinePoints().get(i);
                         canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintLine);
-                    }
-
-                    for (int i =1; i < controller.getSmallShrubPoints().size(); i++) {
-                        currPoint = controller.getSmallShrubPoints().get(i);
-                        canvas.drawCircle(currPoint.x, currPoint.y, 100, paintZone1Shrub);
-                    }
-
-                    for (int i =1; i < controller.getBigShrubPoints().size(); i++) {
-                        currPoint = controller.getBigShrubPoints().get(i);
-                        canvas.drawCircle(currPoint.x, currPoint.y, 250, paintZone1Shrub);
                     }
 
                     if (touch && controller.getLinePoints().size() > 0)
@@ -189,6 +189,45 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
             if (canvas != null) {
                 surfaceHolder.unlockCanvasAndPost(canvas);
             }
+        }
+    }
+
+    public void drawOnCanvas(Canvas canvas, float offset) {
+        canvas.drawRect(0, 0, width, height, paintBG);
+
+        PointF prevPoint, currPoint;
+
+        for (int i = 1; i < controller.getRoadPoints().size(); i++) {
+            prevPoint = controller.getRoadPoints().get(i-1);
+            currPoint = controller.getRoadPoints().get(i);
+            canvas.drawBitmap(zone1Base, currPoint.x - zone1Base.getWidth()/2 - offset, currPoint.y - zone1Base.getHeight()/2, null);
+        }
+
+        for (int i = 1; i < controller.getRoadPoints().size(); i++) {
+            prevPoint = controller.getRoadPoints().get(i-1);
+            currPoint = controller.getRoadPoints().get(i);
+            canvas.drawLine(prevPoint.x - offset, prevPoint.y, currPoint.x - offset, currPoint.y, paintOutline);
+        }
+
+        for (int i = 1; i < controller.getFlowerPoints().size(); i++) {
+            currPoint = controller.getFlowerPoints().get(i);
+            canvas.drawPoint(currPoint.x - offset, currPoint.y, paintLine);
+        }
+
+        for (int i = 1; i < controller.getRoadPoints().size(); i++) {
+            prevPoint = controller.getRoadPoints().get(i-1);
+            currPoint = controller.getRoadPoints().get(i);
+            canvas.drawLine(prevPoint.x - offset, prevPoint.y, currPoint.x - offset, currPoint.y, paintRoad);
+        }
+
+        for (int i =1; i < controller.getSmallShrubPoints().size(); i++) {
+            currPoint = controller.getSmallShrubPoints().get(i);
+            canvas.drawBitmap(zone1SmallShrub1, currPoint.x - zone1SmallShrub1.getWidth()/2 - offset, currPoint.y - zone1SmallShrub1.getHeight()/2, null);
+        }
+
+        for (int i =1; i < controller.getBigShrubPoints().size(); i++) {
+            currPoint = controller.getBigShrubPoints().get(i);
+            canvas.drawBitmap(zone1BigShrub1, currPoint.x - zone1BigShrub1.getWidth()/2 - offset, currPoint.y - zone1BigShrub1.getHeight()/2, null);
         }
     }
 

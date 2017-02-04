@@ -19,6 +19,8 @@ public class Controller {
     private Random random;
     private float score;
 
+    private float canvasLpos, canvasRpos;
+
     /* zone 1 */
     private ArrayList<PointF> flowerPoints, smallShrubPoints, bigShrubPoints;
     private int flowerPointToRemove, smallShrubPointToRemove, bigShrubPointToRemove;
@@ -33,6 +35,9 @@ public class Controller {
         crossTime = 1000;
         random = new Random();
         score = 0;
+
+        canvasLpos = -1*width;
+        canvasRpos = 0;
 
         /* zone 1* */
         flowerPoints = new ArrayList<PointF>();
@@ -58,6 +63,12 @@ public class Controller {
     public ArrayList<PointF> getSmallShrubPoints() { return smallShrubPoints; }
 
     public ArrayList<PointF> getBigShrubPoints() { return bigShrubPoints; }
+
+    public float getCanvasLpos() { return canvasLpos; }
+    public void setCanvasLpos(float pos) { canvasLpos = pos; }
+
+    public float getCanvasRpos() { return canvasRpos; }
+    public void setCanvasRpos(float pos) { canvasRpos = pos; }
 
     public void addLinePoint(float x, float y) {
         linePoints.add(new PointF(x, y));
@@ -200,6 +211,9 @@ public class Controller {
             bigShrubPoints.get(i).offset((int) (-1*width*(deltaTimeNanos/crossTime)), 0);
             if (bigShrubPoints.get(i).x < -1*width) bigShrubPointToRemove = i;
         }
+
+        canvasLpos -= width*(deltaTimeNanos/crossTime);
+        canvasRpos -= width*(deltaTimeNanos/crossTime);
 
         PointF prevPoint, currPoint;
         float w = 200;
