@@ -102,7 +102,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         canvasL = new Canvas(bitmapL);
         canvasR = new Canvas(bitmapR);
 
-        controller = new Controller(width, height);
+        controller = new Controller(width, height, getContext());
 
         previousFrameNanos = System.nanoTime();
         Choreographer.getInstance().postFrameCallback(this);

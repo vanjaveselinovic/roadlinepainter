@@ -1,10 +1,17 @@
 package com.vanjav.roadlinepainter;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.support.v4.content.ContextCompat;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Random;
 
 /**
@@ -12,27 +19,32 @@ import java.util.Random;
  */
 
 public class Controller {
-    private ArrayList<PointF> linePoints, roadPoints;
+    private LinkedList<PointF> linePoints, roadPoints;
     private int linePointToRemove, roadPointToRemove;
     private int width, height;
     private int crossTime;
     private Random random;
     private float score;
+    private int length;
 
     private float canvasLpos, canvasRpos;
+    private ArrayList<Bitmap> bitmaps;
 
     /* zone 1 */
     private ArrayList<PointF> flowerPoints, smallShrubPoints, bigShrubPoints;
     private int flowerPointToRemove, smallShrubPointToRemove, bigShrubPointToRemove;
+    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText, paintZone1Shrub;
+    private Bitmap zone1SmallShrub1, zone1BigShrub1, zone1Base;
 
-    public Controller (int width, int height) {
-        linePoints = new ArrayList<PointF>();
-        roadPoints = new ArrayList<PointF>();
+    public Controller (int width, int height, Context context) {
+        linePoints = new LinkedList<PointF>();
+        roadPoints = new LinkedList<PointF>();
         linePointToRemove = 0;
         roadPointToRemove = 0;
         this.width = width;
         this.height = height;
-        crossTime = 1000;
+        crossTime = 1000; //1 second
+        length = 1000; //1000 seconds
         random = new Random();
         score = 0;
 
@@ -46,13 +58,54 @@ public class Controller {
 
         initRoad();
         genRoad();
+        
+        paintBG = new Paint();
+        paintBG.setColor(ContextCompat.getColor(context, R.color.colorZone1Grass2));
+
+        paintRoad = new Paint();
+        paintRoad.setColor(ContextCompat.getColor(context, R.color.colorZone1Road));
+        paintRoad.setStrokeWidth(200);
+        paintRoad.setStrokeCap(Paint.Cap.ROUND);
+
+        paintOutline = new Paint();
+        paintOutline.setColor(ContextCompat.getColor(context, R.color.colorZone1Grass2));
+        paintOutline.setStrokeWidth(350);
+        paintOutline.setStrokeCap(Paint.Cap.ROUND);
+
+        paintLine = new Paint();
+        paintLine.setColor(ContextCompat.getColor(context, R.color.colorZone1Line));
+        paintLine.setStrokeWidth(20);
+        paintLine.setStrokeCap(Paint.Cap.ROUND);
+
+        paintZone1Shrub = new Paint();
+        paintZone1Shrub.setColor(ContextCompat.getColor(context, R.color.colorZone1Bushes));
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+        zone1SmallShrub1 = BitmapFactory.decodeResource(context.getResources(), R.drawable.zone1smallshrub1, options);
+        zone1BigShrub1 = BitmapFactory.decodeResource(context.getResources(), R.drawable.zone1bigshrub1, options);
+        zone1Base = BitmapFactory.decodeResource(context.getResources(), R.drawable.zone1base, options);
+
+        /*
+        bitmaps = new ArrayList<Bitmap>();
+        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+        Bitmap tempBitmap;
+        Canvas tempCanvas;
+        for (int i = 0; i < length; i++) {
+            tempBitmap = Bitmap.createBitmap(width, height, conf);
+            bitmaps.add(tempBitmap);
+            tempCanvas = new Canvas(tempBitmap);
+            drawOnCanvas(tempCanvas, width*i);
+        }
+        */
     }
 
-    public ArrayList<PointF> getLinePoints() {
+    public LinkedList<PointF> getLinePoints() {
         return linePoints;
     }
 
-    public ArrayList<PointF> getRoadPoints() {
+    public LinkedList<PointF> getRoadPoints() {
         return roadPoints;
     }
 
@@ -161,6 +214,45 @@ public class Controller {
                     x-750 + random.nextFloat()*1000,
                     y-1000 - random.nextFloat()*250
             ));
+        }
+    }
+
+    public void drawOnCanvas(Canvas canvas, float offset) {
+        canvas.drawRect(0, 0, width, height, paintBG);
+
+        PointF prevPoint, currPoint;
+
+        for (int i = 1; i < getRoadPoints().size(); i++) {
+            prevPoint = getRoadPoints().get(i-1);
+            currPoint = getRoadPoints().get(i);
+            canvas.drawBitmap(zone1Base, currPoint.x - zone1Base.getWidth()/2 - offset, currPoint.y - zone1Base.getHeight()/2, null);
+        }
+
+        for (int i = 1; i < getRoadPoints().size(); i++) {
+            prevPoint = getRoadPoints().get(i-1);
+            currPoint = getRoadPoints().get(i);
+            canvas.drawLine(prevPoint.x - offset, prevPoint.y, currPoint.x - offset, currPoint.y, paintOutline);
+        }
+
+        for (int i = 1; i < getFlowerPoints().size(); i++) {
+            currPoint = getFlowerPoints().get(i);
+            canvas.drawPoint(currPoint.x - offset, currPoint.y, paintLine);
+        }
+
+        for (int i = 1; i < getRoadPoints().size(); i++) {
+            prevPoint = getRoadPoints().get(i-1);
+            currPoint = getRoadPoints().get(i);
+            canvas.drawLine(prevPoint.x - offset, prevPoint.y, currPoint.x - offset, currPoint.y, paintRoad);
+        }
+
+        for (int i =1; i < getSmallShrubPoints().size(); i++) {
+            currPoint = getSmallShrubPoints().get(i);
+            canvas.drawBitmap(zone1SmallShrub1, currPoint.x - zone1SmallShrub1.getWidth()/2 - offset, currPoint.y - zone1SmallShrub1.getHeight()/2, null);
+        }
+
+        for (int i =1; i < getBigShrubPoints().size(); i++) {
+            currPoint = getBigShrubPoints().get(i);
+            canvas.drawBitmap(zone1BigShrub1, currPoint.x - zone1BigShrub1.getWidth()/2 - offset, currPoint.y - zone1BigShrub1.getHeight()/2, null);
         }
     }
 
