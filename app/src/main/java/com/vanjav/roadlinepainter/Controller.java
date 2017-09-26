@@ -44,7 +44,6 @@ public class Controller {
         this.width = width;
         this.height = height;
         crossTime = 1000; //1 second
-        length = 1000; //1000 seconds
         random = new Random();
         score = 0;
 
@@ -162,7 +161,7 @@ public class Controller {
     }
 
     public void genItems(float x, float y) {
-        int numItemsToAdd = random.nextInt(7);
+        int numItemsToAdd = random.nextInt(70);
 
         for (int i = 0; i < numItemsToAdd; i++) {
             flowerPoints.add(new PointF(
@@ -171,7 +170,7 @@ public class Controller {
             ));
         }
 
-        numItemsToAdd = random.nextInt(7);
+        numItemsToAdd = random.nextInt(70);
 
         for (int i = 0; i < numItemsToAdd; i++) {
             flowerPoints.add(new PointF(
@@ -180,7 +179,7 @@ public class Controller {
             ));
         }
 
-        numItemsToAdd = random.nextInt(3);
+        numItemsToAdd = random.nextInt(30);
 
         for (int i = 0; i < numItemsToAdd; i++) {
             smallShrubPoints.add(new PointF(
@@ -189,7 +188,7 @@ public class Controller {
             ));
         }
 
-        numItemsToAdd = random.nextInt(3);
+        numItemsToAdd = random.nextInt(30);
 
         for (int i = 0; i < numItemsToAdd; i++) {
             smallShrubPoints.add(new PointF(
@@ -198,7 +197,7 @@ public class Controller {
             ));
         }
 
-        numItemsToAdd = random.nextInt(2);
+        numItemsToAdd = random.nextInt(20);
 
         for (int i = 0; i < numItemsToAdd; i++) {
             bigShrubPoints.add(new PointF(
@@ -207,52 +206,13 @@ public class Controller {
             ));
         }
 
-        numItemsToAdd = random.nextInt(2);
+        numItemsToAdd = random.nextInt(20);
 
         for (int i = 0; i < numItemsToAdd; i++) {
             bigShrubPoints.add(new PointF(
                     x-750 + random.nextFloat()*1000,
                     y-1000 - random.nextFloat()*250
             ));
-        }
-    }
-
-    public void drawOnCanvas(Canvas canvas, float offset) {
-        canvas.drawRect(0, 0, width, height, paintBG);
-
-        PointF prevPoint, currPoint;
-
-        for (int i = 1; i < getRoadPoints().size(); i++) {
-            prevPoint = getRoadPoints().get(i-1);
-            currPoint = getRoadPoints().get(i);
-            canvas.drawBitmap(zone1Base, currPoint.x - zone1Base.getWidth()/2 - offset, currPoint.y - zone1Base.getHeight()/2, null);
-        }
-
-        for (int i = 1; i < getRoadPoints().size(); i++) {
-            prevPoint = getRoadPoints().get(i-1);
-            currPoint = getRoadPoints().get(i);
-            canvas.drawLine(prevPoint.x - offset, prevPoint.y, currPoint.x - offset, currPoint.y, paintOutline);
-        }
-
-        for (int i = 1; i < getFlowerPoints().size(); i++) {
-            currPoint = getFlowerPoints().get(i);
-            canvas.drawPoint(currPoint.x - offset, currPoint.y, paintLine);
-        }
-
-        for (int i = 1; i < getRoadPoints().size(); i++) {
-            prevPoint = getRoadPoints().get(i-1);
-            currPoint = getRoadPoints().get(i);
-            canvas.drawLine(prevPoint.x - offset, prevPoint.y, currPoint.x - offset, currPoint.y, paintRoad);
-        }
-
-        for (int i =1; i < getSmallShrubPoints().size(); i++) {
-            currPoint = getSmallShrubPoints().get(i);
-            canvas.drawBitmap(zone1SmallShrub1, currPoint.x - zone1SmallShrub1.getWidth()/2 - offset, currPoint.y - zone1SmallShrub1.getHeight()/2, null);
-        }
-
-        for (int i =1; i < getBigShrubPoints().size(); i++) {
-            currPoint = getBigShrubPoints().get(i);
-            canvas.drawBitmap(zone1BigShrub1, currPoint.x - zone1BigShrub1.getWidth()/2 - offset, currPoint.y - zone1BigShrub1.getHeight()/2, null);
         }
     }
 
