@@ -27,14 +27,9 @@ public class Controller {
     private float score;
     private int length;
 
-    private float canvasLpos, canvasRpos;
-    private ArrayList<Bitmap> bitmaps;
-
     /* zone 1 */
-    private ArrayList<PointF> flowerPoints, smallShrubPoints, bigShrubPoints;
-    private int flowerPointToRemove, smallShrubPointToRemove, bigShrubPointToRemove;
-    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText, paintZone1Shrub;
-    private Bitmap zone1SmallShrub1, zone1BigShrub1, zone1Base;
+    private LinkedList<PointF> flowerPoints, treePoints;
+    private int flowerPointToRemove, treePointToRemove;
 
     public Controller (int width, int height, Context context) {
         linePoints = new LinkedList<PointF>();
@@ -44,61 +39,15 @@ public class Controller {
         this.width = width;
         this.height = height;
         crossTime = 1000; //1 second
-        length = 1000; //1000 seconds
         random = new Random();
         score = 0;
 
-        canvasLpos = -1*width;
-        canvasRpos = 0;
-
         /* zone 1* */
-        flowerPoints = new ArrayList<PointF>();
-        smallShrubPoints = new ArrayList<PointF>();
-        bigShrubPoints = new ArrayList<PointF>();
+        flowerPoints = new LinkedList<PointF>();
+        treePoints = new LinkedList<PointF>();
 
         initRoad();
         genRoad();
-        
-        paintBG = new Paint();
-        paintBG.setColor(ContextCompat.getColor(context, R.color.colorZone1Grass2));
-
-        paintRoad = new Paint();
-        paintRoad.setColor(ContextCompat.getColor(context, R.color.colorZone1Road));
-        paintRoad.setStrokeWidth(200);
-        paintRoad.setStrokeCap(Paint.Cap.ROUND);
-
-        paintOutline = new Paint();
-        paintOutline.setColor(ContextCompat.getColor(context, R.color.colorZone1Grass2));
-        paintOutline.setStrokeWidth(350);
-        paintOutline.setStrokeCap(Paint.Cap.ROUND);
-
-        paintLine = new Paint();
-        paintLine.setColor(ContextCompat.getColor(context, R.color.colorZone1Line));
-        paintLine.setStrokeWidth(20);
-        paintLine.setStrokeCap(Paint.Cap.ROUND);
-
-        paintZone1Shrub = new Paint();
-        paintZone1Shrub.setColor(ContextCompat.getColor(context, R.color.colorZone1Bushes));
-
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-
-        zone1SmallShrub1 = BitmapFactory.decodeResource(context.getResources(), R.drawable.zone1smallshrub1, options);
-        zone1BigShrub1 = BitmapFactory.decodeResource(context.getResources(), R.drawable.zone1bigshrub1, options);
-        zone1Base = BitmapFactory.decodeResource(context.getResources(), R.drawable.zone1base, options);
-
-        /*
-        bitmaps = new ArrayList<Bitmap>();
-        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
-        Bitmap tempBitmap;
-        Canvas tempCanvas;
-        for (int i = 0; i < length; i++) {
-            tempBitmap = Bitmap.createBitmap(width, height, conf);
-            bitmaps.add(tempBitmap);
-            tempCanvas = new Canvas(tempBitmap);
-            drawOnCanvas(tempCanvas, width*i);
-        }
-        */
     }
 
     public LinkedList<PointF> getLinePoints() {
@@ -109,19 +58,13 @@ public class Controller {
         return roadPoints;
     }
 
-    public ArrayList<PointF> getFlowerPoints() {
+    public LinkedList<PointF> getFlowerPoints() {
         return flowerPoints;
     }
 
-    public ArrayList<PointF> getSmallShrubPoints() { return smallShrubPoints; }
-
-    public ArrayList<PointF> getBigShrubPoints() { return bigShrubPoints; }
-
-    public float getCanvasLpos() { return canvasLpos; }
-    public void setCanvasLpos(float pos) { canvasLpos = pos; }
-
-    public float getCanvasRpos() { return canvasRpos; }
-    public void setCanvasRpos(float pos) { canvasRpos = pos; }
+    public LinkedList<PointF> getTreePoints() {
+        return treePoints;
+    }
 
     public void addLinePoint(float x, float y) {
         linePoints.add(new PointF(x, y));
@@ -183,7 +126,7 @@ public class Controller {
         numItemsToAdd = random.nextInt(3);
 
         for (int i = 0; i < numItemsToAdd; i++) {
-            smallShrubPoints.add(new PointF(
+            treePoints.add(new PointF(
                     x-500 + random.nextFloat()*1000,
                     y+600 + random.nextFloat()*250
             ));
@@ -192,67 +135,10 @@ public class Controller {
         numItemsToAdd = random.nextInt(3);
 
         for (int i = 0; i < numItemsToAdd; i++) {
-            smallShrubPoints.add(new PointF(
+            treePoints.add(new PointF(
                     x-500 + random.nextFloat()*1000,
                     y-600 - random.nextFloat()*250
             ));
-        }
-
-        numItemsToAdd = random.nextInt(2);
-
-        for (int i = 0; i < numItemsToAdd; i++) {
-            bigShrubPoints.add(new PointF(
-                    x-750 + random.nextFloat()*1000,
-                    y+1000 + random.nextFloat()*250
-            ));
-        }
-
-        numItemsToAdd = random.nextInt(2);
-
-        for (int i = 0; i < numItemsToAdd; i++) {
-            bigShrubPoints.add(new PointF(
-                    x-750 + random.nextFloat()*1000,
-                    y-1000 - random.nextFloat()*250
-            ));
-        }
-    }
-
-    public void drawOnCanvas(Canvas canvas, float offset) {
-        canvas.drawRect(0, 0, width, height, paintBG);
-
-        PointF prevPoint, currPoint;
-
-        for (int i = 1; i < getRoadPoints().size(); i++) {
-            prevPoint = getRoadPoints().get(i-1);
-            currPoint = getRoadPoints().get(i);
-            canvas.drawBitmap(zone1Base, currPoint.x - zone1Base.getWidth()/2 - offset, currPoint.y - zone1Base.getHeight()/2, null);
-        }
-
-        for (int i = 1; i < getRoadPoints().size(); i++) {
-            prevPoint = getRoadPoints().get(i-1);
-            currPoint = getRoadPoints().get(i);
-            canvas.drawLine(prevPoint.x - offset, prevPoint.y, currPoint.x - offset, currPoint.y, paintOutline);
-        }
-
-        for (int i = 1; i < getFlowerPoints().size(); i++) {
-            currPoint = getFlowerPoints().get(i);
-            canvas.drawPoint(currPoint.x - offset, currPoint.y, paintLine);
-        }
-
-        for (int i = 1; i < getRoadPoints().size(); i++) {
-            prevPoint = getRoadPoints().get(i-1);
-            currPoint = getRoadPoints().get(i);
-            canvas.drawLine(prevPoint.x - offset, prevPoint.y, currPoint.x - offset, currPoint.y, paintRoad);
-        }
-
-        for (int i =1; i < getSmallShrubPoints().size(); i++) {
-            currPoint = getSmallShrubPoints().get(i);
-            canvas.drawBitmap(zone1SmallShrub1, currPoint.x - zone1SmallShrub1.getWidth()/2 - offset, currPoint.y - zone1SmallShrub1.getHeight()/2, null);
-        }
-
-        for (int i =1; i < getBigShrubPoints().size(); i++) {
-            currPoint = getBigShrubPoints().get(i);
-            canvas.drawBitmap(zone1BigShrub1, currPoint.x - zone1BigShrub1.getWidth()/2 - offset, currPoint.y - zone1BigShrub1.getHeight()/2, null);
         }
     }
 
@@ -286,26 +172,14 @@ public class Controller {
             if (flowerPoints.get(i).x < -1*width) flowerPointToRemove = i;
         }
 
-        if (smallShrubPoints.size() > 0) {
-            smallShrubPoints.subList(0, smallShrubPointToRemove).clear();
+        if (treePoints.size() > 0) {
+            treePoints.subList(0, treePointToRemove).clear();
         }
 
-        for (int i = 0; i < smallShrubPoints.size(); i++) {
-            smallShrubPoints.get(i).offset((int) (-1*width*(deltaTimeNanos/crossTime)), 0);
-            if (smallShrubPoints.get(i).x < -1*width) smallShrubPointToRemove = i;
+        for (int i = 0; i < treePoints.size(); i++) {
+            treePoints.get(i).offset((int) (-1*width*(deltaTimeNanos/crossTime)), 0);
+            if (treePoints.get(i).x < -1*width) treePointToRemove = i;
         }
-
-        if (bigShrubPoints.size() > 0) {
-            bigShrubPoints.subList(0, bigShrubPointToRemove).clear();
-        }
-
-        for (int i = 0; i < bigShrubPoints.size(); i++) {
-            bigShrubPoints.get(i).offset((int) (-1*width*(deltaTimeNanos/crossTime)), 0);
-            if (bigShrubPoints.get(i).x < -1*width) bigShrubPointToRemove = i;
-        }
-
-        canvasLpos -= width*(deltaTimeNanos/crossTime);
-        canvasRpos -= width*(deltaTimeNanos/crossTime);
 
         PointF prevPoint, currPoint;
         float w = 200;
