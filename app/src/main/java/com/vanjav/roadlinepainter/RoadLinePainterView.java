@@ -35,16 +35,14 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private SurfaceHolder surfaceHolder;
     private long previousFrameNanos;
     private Canvas canvas;
-    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText, paintZone1Shrub;
+    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText;
     private Bitmap zone1tree;
     private LinkedList<Bitmap> zone1trees;
-    private boolean touch;
     private Controller controller;
     private float currX, currY;
     private boolean paused = false;
     private boolean gameStarted = false;
     private boolean gameOver = false;
-    private boolean pausedBeforeStarting = false;
 
     private Choreographer choreographer = Choreographer.getInstance();
 
@@ -102,7 +100,6 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
             ));
         }
 
-        touch = false;
         surfaceHolder = getHolder();
     }
 
@@ -120,7 +117,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
     public void pause() {
         paused = true;
-        if (!gameStarted) pausedBeforeStarting = true;
+        choreographer.removeFrameCallback(this);
         gameOver();
     }
 
@@ -133,7 +130,6 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     }
 
     public void gameOver() {
-        choreographer.removeFrameCallback(this);
         if (gameStarted) {
             gameOver = true;
             View view = ((View) getParent()).findViewById(R.id.game_over_container);
@@ -154,15 +150,13 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     }
 
     private void update(long deltaTimeNanos) {
-        if (!gameOver && !pausedBeforeStarting) {
-            if (touch) {
-                controller.addLinePoint(currX, currY);
-            }
+        if (gameStarted && !gameOver) {
+            controller.addLinePoint(currX, currY);
 
-            if (!controller.update(deltaTimeNanos))
+            if (!controller.update(deltaTimeNanos)) {
                 gameOver();
+            }
         }
-        pausedBeforeStarting = false;
     }
 
     Bitmap currTree;
@@ -197,7 +191,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                         canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintLine);
                     }
 
-                    if (touch && controller.getLinePoints().size() > 0)
+                    if (gameStarted && !gameOver && controller.getLinePoints().size() > 0)
                         canvas.drawLine(controller.getLinePoints().get(controller.getLinePoints().size() - 1).x, controller.getLinePoints().get(controller.getLinePoints().size() - 1).y, currX, currY, paintLine);
 
                     for (i = 1; i < controller.getTreePoints().size(); i++) {
@@ -223,11 +217,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             gameStarted = true;
-            touch = true;
-            previousFrameNanos = System.nanoTime();
-            choreographer.postFrameCallback(this);
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            touch = false;
             gameOver();
         }
 
