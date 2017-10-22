@@ -21,11 +21,13 @@ import java.util.Random;
 public class Controller {
     private LinkedList<PointF> linePoints, roadPoints;
     private int linePointToRemove, roadPointToRemove;
+    private float score;
+
     private int width, height;
     private int crossTime;
+    private float lineWidth, roadWidth;
+
     private Random random;
-    private float score;
-    private int length;
     private int i;
 
     /* zone 1 */
@@ -39,11 +41,15 @@ public class Controller {
         roadPoints = new LinkedList<PointF>();
         linePointToRemove = 0;
         roadPointToRemove = 0;
+        score = 0;
+
         this.width = width;
         this.height = height;
         crossTime = 1000; //1 second
+        lineWidth = 20;
+        roadWidth = 200;
+
         random = new Random();
-        score = 0;
 
         /* zone 1* */
         flowerPoints = new LinkedList<PointF>();
@@ -70,34 +76,42 @@ public class Controller {
         return treePoints;
     }
 
-    public LinkedList<Integer> getTreeSizes() { return treeSizes; }
+    public LinkedList<Integer> getTreeSizes() {
+        return treeSizes;
+    }
 
     public void addLinePoint(float x, float y) {
         linePoints.add(new PointF(x, y));
-    }
-
-    public void addRoadPoint(float x, float y) {
-        roadPoints.add(new PointF(x, y));
     }
 
     public float getScore() {
         return score;
     }
 
-    public void updateScore(float x) {
+    public float getLineWidth() {
+        return lineWidth;
+    }
+
+    public float getRoadWidth() {
+        return roadWidth;
+    }
+
+    private void updateScore(float x) {
         score += x/1000.0;
     }
 
-    public void initRoad() {
-        roadPoints.add(new PointF(width/2, height/2));
-        roadPoints.add(new PointF(width+width/2, height/2));
-    }
+    private void initRoad() {
+        roadPoints.add(new PointF(0, height/2));
+        genItems(0, height/2);
 
+        roadPoints.add(new PointF(width+width/2, height/2));
+        genItems(width+width/2, height/2);
+    }
 
     private PointF lastPointInRoad;
     private float plusMinus, genX, genY;
 
-    public void genRoad() {
+    private void genRoad() {
         lastPointInRoad = roadPoints.get(roadPoints.size()-1);
         plusMinus = 0;
 
@@ -125,7 +139,7 @@ public class Controller {
     private float addX, addY;
     private int numItemsToAdd;
 
-    public void genItems(float x, float y) {
+    private void genItems(float x, float y) {
         numItemsToAdd = random.nextInt(7);
 
         for (i = 0; i < numItemsToAdd; i++) {
@@ -171,10 +185,9 @@ public class Controller {
         }
     }
 
-    PointF prevPoint, currPoint;
-    float roadWidth = 200;
-    float p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
-    float k, m;
+    private PointF prevPoint, currPoint;
+    private float p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
+    private float k, m;
 
     private boolean isPointOnRoad(float x, float y) {
         for (i = 1; i < roadPoints.size(); i++) {

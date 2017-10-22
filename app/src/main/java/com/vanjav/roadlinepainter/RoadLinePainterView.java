@@ -31,22 +31,17 @@ import java.util.Random;
  */
 
 public class RoadLinePainterView extends SurfaceView  implements Choreographer.FrameCallback {
-    private int width, height;
     private SurfaceHolder surfaceHolder;
-    private long previousFrameNanos;
-    private Canvas canvas;
-    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText;
-    private Bitmap zone1tree;
-    private LinkedList<Bitmap> zone1trees;
     private Controller controller;
+    private Choreographer choreographer = Choreographer.getInstance();
+
+    private int width, height;
+    private long previousFrameNanos;
     private float currX, currY;
+
     private boolean paused = false;
     private boolean gameStarted = false;
     private boolean gameOver = false;
-
-    private Choreographer choreographer = Choreographer.getInstance();
-
-    private Random random;
 
     private PointF prevPoint, currPoint;
     private int i;
@@ -57,9 +52,28 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
     public RoadLinePainterView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        surfaceHolder = getHolder();
+    }
 
-        random = new Random();
+    @Override
+    protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld){
+        super.onSizeChanged(xNew, yNew, xOld, yOld);
+        width = xNew;
+        height = yNew;
 
+        controller = new Controller(width, height, getContext());
+
+        initPaint();
+
+        previousFrameNanos = System.nanoTime();
+        choreographer.postFrameCallback(this);
+    }
+
+    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText;
+    private Bitmap zone1tree;
+    private LinkedList<Bitmap> zone1trees;
+
+    private void initPaint() {
         paintText = new Paint();
         paintText.setColor(Color.BLACK);
         paintText.setTextSize(50f);
@@ -71,17 +85,17 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
         paintRoad = new Paint();
         paintRoad.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Road));
-        paintRoad.setStrokeWidth(200);
+        paintRoad.setStrokeWidth(controller.getRoadWidth());
         paintRoad.setStrokeCap(Paint.Cap.ROUND);
 
         paintOutline = new Paint();
         paintOutline.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Grass2));
-        paintOutline.setStrokeWidth(350);
+        paintOutline.setStrokeWidth((int) (controller.getRoadWidth() * 1.75));
         paintOutline.setStrokeCap(Paint.Cap.ROUND);
 
         paintLine = new Paint();
         paintLine.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Line));
-        paintLine.setStrokeWidth(20);
+        paintLine.setStrokeWidth(controller.getLineWidth());
         paintLine.setStrokeCap(Paint.Cap.ROUND);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -99,20 +113,6 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                     false
             ));
         }
-
-        surfaceHolder = getHolder();
-    }
-
-    @Override
-    protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld){
-        super.onSizeChanged(xNew, yNew, xOld, yOld);
-        width = xNew;
-        height = yNew;
-
-        controller = new Controller(width, height, getContext());
-
-        previousFrameNanos = System.nanoTime();
-        choreographer.postFrameCallback(this);
     }
 
     public void pause() {
@@ -159,7 +159,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         }
     }
 
-    Bitmap currTree;
+    private Canvas canvas;
+    private Bitmap currTree;
 
     private void draw() {
         try {
