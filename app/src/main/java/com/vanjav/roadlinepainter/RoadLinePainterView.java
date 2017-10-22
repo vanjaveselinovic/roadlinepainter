@@ -46,6 +46,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
     private boolean gameOver = false;
     private boolean pausedBeforeStarting = false;
 
+    private Choreographer choreographer = Choreographer.getInstance();
+
     private Random random;
 
     private PointF prevPoint, currPoint;
@@ -113,7 +115,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         controller = new Controller(width, height, getContext());
 
         previousFrameNanos = System.nanoTime();
-        Choreographer.getInstance().postFrameCallback(this);
+        choreographer.postFrameCallback(this);
     }
 
     public void pause() {
@@ -126,12 +128,12 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         if (paused) {
             paused = false;
             previousFrameNanos = System.nanoTime();
-            Choreographer.getInstance().postFrameCallback(this);
+            choreographer.postFrameCallback(this);
         }
     }
 
     public void gameOver() {
-        Choreographer.getInstance().removeFrameCallback(this);
+        choreographer.removeFrameCallback(this);
         if (gameStarted) {
             gameOver = true;
             View view = ((View) getParent()).findViewById(R.id.game_over_container);
@@ -143,7 +145,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
     @Override
     public void doFrame(long frameTimeNanos) {
-        Choreographer.getInstance().postFrameCallback(this);
+        choreographer.postFrameCallback(this);
 
         draw();
         update((frameTimeNanos - previousFrameNanos)/1000000);
@@ -162,6 +164,8 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         }
         pausedBeforeStarting = false;
     }
+
+    Bitmap currTree;
 
     private void draw() {
         try {
@@ -196,9 +200,11 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                     if (touch && controller.getLinePoints().size() > 0)
                         canvas.drawLine(controller.getLinePoints().get(controller.getLinePoints().size() - 1).x, controller.getLinePoints().get(controller.getLinePoints().size() - 1).y, currX, currY, paintLine);
 
-                    for (i =1; i < controller.getTreePoints().size(); i++) {
+                    for (i = 1; i < controller.getTreePoints().size(); i++) {
                         currPoint = controller.getTreePoints().get(i);
-                        canvas.drawBitmap(zone1trees.get(random.nextInt(5)), currPoint.x - zone1tree.getWidth()/2, currPoint.y - zone1tree.getHeight(), null);
+                        currTree = zone1trees.get(controller.getTreeSizes().get(i));
+
+                        canvas.drawBitmap(currTree, currPoint.x - currTree.getWidth()/2, currPoint.y - currTree.getHeight(), null);
                     }
 
                     canvas.drawText(""+Math.round(controller.getScore()*10.0)/10.0, width/2, 50, paintText);
@@ -219,7 +225,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
             gameStarted = true;
             touch = true;
             previousFrameNanos = System.nanoTime();
-            Choreographer.getInstance().postFrameCallback(this);
+            choreographer.postFrameCallback(this);
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
             touch = false;
             gameOver();
