@@ -142,11 +142,11 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         previousFrameNanos = frameTimeNanos;
     }
 
-    private void update(long deltaTimeNanos) {
+    private void update(long deltaTimeMillis) {
         if (gameStarted && !gameOver) {
             controller.addLinePoint(currX, currY);
 
-            if (!controller.update(deltaTimeNanos)) {
+            if (!controller.update(deltaTimeMillis)) {
                 gameOver();
             }
         }
@@ -186,7 +186,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                     }
 
                     if (gameStarted && !gameOver && controller.getLinePoints().size() > 0)
-                        canvas.drawLine(controller.getLinePoints().get(controller.getLinePoints().size() - 1).x, controller.getLinePoints().get(controller.getLinePoints().size() - 1).y, currX, currY, paintLine);
+                        canvas.drawLine(controller.getLinePoints().getLast().x, controller.getLinePoints().getLast().y, currX, currY, paintLine);
 
                     for (i = 1; i < controller.getTreePoints().size(); i++) {
                         currPoint = controller.getTreePoints().get(i);
@@ -196,6 +196,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                     }
 
                     canvas.drawText(""+Math.round(controller.getScore()*10.0)/10.0, width/2, 50, paintText);
+                    canvas.drawText(""+controller.getTreePoints().size(), width/2, 100, paintText);
                 }
             }
         }

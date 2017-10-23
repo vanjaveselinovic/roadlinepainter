@@ -12,7 +12,6 @@ import java.util.Random;
 
 public class Controller {
     private LinkedList<PointF> linePoints, roadPoints;
-    private int linePointToRemove, roadPointToRemove;
     private float score;
 
     private int width, height;
@@ -25,7 +24,8 @@ public class Controller {
     /* zone 1 */
     private LinkedList<PointF> flowerPoints, treePoints;
     private LinkedList<Integer> treeSizes;
-    private int flowerPointToRemove, treePointToRemove;
+    private int flowerPointToRemove;
+    private LinkedList<Integer> treePointsToRemove;
 
 
     public Controller (int width, int height, Context context) {
@@ -47,6 +47,7 @@ public class Controller {
         flowerPoints = new LinkedList<PointF>();
         treePoints = new LinkedList<PointF>();
         treeSizes = new LinkedList<Integer>();
+        treePointsToRemove = new LinkedList<Integer>();
 
         initRoad();
         genRoad();
@@ -96,6 +97,21 @@ public class Controller {
         roadPoints.add(new PointF(0, height/2));
         genItems(0, height/2);
 
+        roadPoints.add(new PointF(width/5, height/2));
+        genItems(width/5, height/2);
+
+        roadPoints.add(new PointF(2*width/5, height/2));
+        genItems(2*width/5, height/2);
+
+        roadPoints.add(new PointF(3*width/5, height/2));
+        genItems(3*width/5, height/2);
+
+        roadPoints.add(new PointF(4*width/5, height/2));
+        genItems(4*width/5, height/2);
+
+        roadPoints.add(new PointF(width, height/2));
+        genItems(width, height/2);
+
         roadPoints.add(new PointF(width+width/2, height/2));
         genItems(width+width/2, height/2);
     }
@@ -104,7 +120,7 @@ public class Controller {
     private float plusMinus, genX, genY;
 
     private void genRoad() {
-        lastPointInRoad = roadPoints.get(roadPoints.size()-1);
+        lastPointInRoad = roadPoints.getLast();
         plusMinus = 0;
 
         while(lastPointInRoad.x < width*2) {
@@ -122,14 +138,34 @@ public class Controller {
                 genY = height - 100;
 
             roadPoints.add(new PointF(genX, genY));
-            lastPointInRoad = roadPoints.get(roadPoints.size()-1);
+            lastPointInRoad = roadPoints.getLast();
 
             genItems(genX, genY);
         }
     }
 
+    private int left, right;
+
+    private int binarySearchPointFList(LinkedList<PointF> list, float y) {
+        if (list.isEmpty()) return 0;
+
+        left = 0;
+        right = list.size() - 1;
+
+        while (right != left) {
+            if (y > list.get(left + (right-left)/2).y)
+                left = left + (right-left)/2 + 1;
+            else
+                right = left + (right-left)/2;
+        }
+
+        if (y > list.get(left).y) return left+1;
+        else return left;
+    }
+
     private float addX, addY;
     private int numItemsToAdd;
+    private int positionToInsert;
 
     private void genItems(float x, float y) {
         numItemsToAdd = random.nextInt(7);
@@ -155,24 +191,26 @@ public class Controller {
         numItemsToAdd = random.nextInt(3);
 
         for (i = 0; i < numItemsToAdd; i++) {
-            addX = x-500 + random.nextFloat()*1000;
-            addY = y+600 + random.nextFloat()*250;
+            addX = x-width/2 + random.nextFloat()*width/2;
+            addY = (float) (y+roadWidth/2 + random.nextFloat()*(1.1*height-y));
 
             if (!isPointOnRoad(addX, addY)) {
-                treePoints.add(new PointF(addX, addY));
-                treeSizes.add(random.nextInt(5));
+                positionToInsert = binarySearchPointFList(treePoints, addY);
+                treePoints.add(positionToInsert, new PointF(addX, addY));
+                treeSizes.add(positionToInsert, random.nextInt(5));
             }
         }
 
         numItemsToAdd = random.nextInt(3);
 
         for (i = 0; i < numItemsToAdd; i++) {
-            addX = x-500 + random.nextFloat()*1000;
-            addY = y-600 - random.nextFloat()*250;
+            addX = x-width/2 + random.nextFloat()*width/2;
+            addY = y-roadWidth/2 - random.nextFloat()*y;
 
             if (!isPointOnRoad(addX, addY)) {
-                treePoints.add(new PointF(addX, addY));
-                treeSizes.add(random.nextInt(5));
+                positionToInsert = binarySearchPointFList(treePoints, addY);
+                treePoints.add(positionToInsert, new PointF(addX, addY));
+                treeSizes.add(positionToInsert, random.nextInt(5));
             }
         }
     }
@@ -240,6 +278,8 @@ public class Controller {
         return false;
     }
 
+    private int linePointToRemove, roadPointToRemove;
+
     public boolean update(float deltaTimeMillis) {
         genRoad();
 
@@ -271,17 +311,21 @@ public class Controller {
         }
 
         if (treePoints.size() > 0) {
-            treePoints.subList(0, treePointToRemove).clear();
-            treeSizes.subList(0, treePointToRemove).clear();
+            for (i = 0; i < treePointsToRemove.size(); i++) {
+                treePoints.remove(treePointsToRemove.get(i) - i);
+                treeSizes.remove(treePointsToRemove.get(i) - i);
+            }
         }
+
+        treePointsToRemove.clear();
 
         for (i = 0; i < treePoints.size(); i++) {
             treePoints.get(i).offset((int) (-1*width*(deltaTimeMillis/crossTime)), 0);
-            if (treePoints.get(i).x < -1*width) treePointToRemove = i;
+            if (treePoints.get(i).x < -1*width) treePointsToRemove.add(i);
         }
 
         if (linePoints.size() > 0)
-            return isPointOnRoad(linePoints.get(linePoints.size() - 1).x, linePoints.get(linePoints.size() - 1).y);
+            return isPointOnRoad(linePoints.getLast().x, linePoints.getLast().y);
 
         return false;
     }
