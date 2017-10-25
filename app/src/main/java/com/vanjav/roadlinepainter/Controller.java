@@ -168,26 +168,27 @@ public class Controller {
     private int positionToInsert;
 
     private void genItems(float x, float y) {
+        //flowers above road
         numItemsToAdd = random.nextInt(7);
 
         for (i = 0; i < numItemsToAdd; i++) {
             addX = x-250 + random.nextFloat()*500;
             addY = y+300 + random.nextFloat()*250;
 
-            //if (!isPointOnRoad(addX, addY))
-                flowerPoints.add(new PointF(addX, addY));
+            flowerPoints.add(new PointF(addX, addY));
         }
 
+        //flowers below road
         numItemsToAdd = random.nextInt(7);
 
         for (i = 0; i < numItemsToAdd; i++) {
             addX = x-250 + random.nextFloat()*500;
             addY = y-300 - random.nextFloat()*250;
 
-            //if (!isPointOnRoad(addX, addY))
-                flowerPoints.add(new PointF(addX, addY));
+            flowerPoints.add(new PointF(addX, addY));
         }
 
+        //trees above road
         numItemsToAdd = random.nextInt(3);
 
         for (i = 0; i < numItemsToAdd; i++) {
@@ -201,6 +202,7 @@ public class Controller {
             }
         }
 
+        //trees below road
         numItemsToAdd = random.nextInt(3);
 
         for (i = 0; i < numItemsToAdd; i++) {
@@ -310,6 +312,11 @@ public class Controller {
             if (flowerPoints.get(i).x < -1*width) flowerPointToRemove = i;
         }
 
+        for (i = 0; i < treePoints.size(); i++) {
+            treePoints.get(i).offset((int) (-1*width*(deltaTimeMillis/crossTime)), 0);
+            if (treePoints.get(i).x < -1*width) treePointsToRemove.add(i);
+        }
+
         if (treePoints.size() > 0) {
             for (i = 0; i < treePointsToRemove.size(); i++) {
                 treePoints.remove(treePointsToRemove.get(i) - i);
@@ -318,11 +325,6 @@ public class Controller {
         }
 
         treePointsToRemove.clear();
-
-        for (i = 0; i < treePoints.size(); i++) {
-            treePoints.get(i).offset((int) (-1*width*(deltaTimeMillis/crossTime)), 0);
-            if (treePoints.get(i).x < -1*width) treePointsToRemove.add(i);
-        }
 
         if (linePoints.size() > 0)
             return isPointOnRoad(linePoints.getLast().x, linePoints.getLast().y);
