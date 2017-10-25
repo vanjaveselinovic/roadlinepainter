@@ -8,4 +8,5 @@
     <color name="colorZone1Bushes">#5f9f33</color>
     <color name="colorZone1Road">#909090</color>
     <color name="colorZone1Line">#edc345</color>
+    <color name="black">#000000</color>
 </resources>

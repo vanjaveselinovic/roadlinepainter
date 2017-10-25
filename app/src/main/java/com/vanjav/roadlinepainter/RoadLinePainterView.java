@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.graphics.Typeface;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -62,15 +63,24 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
         choreographer.postFrameCallback(this);
     }
 
-    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText;
+    private Paint paintBG, paintRoad, paintOutline, paintLine, paintText, paintStroke;
     private Bitmap zone1tree;
     private LinkedList<Bitmap> zone1trees;
 
     private void initPaint() {
         paintText = new Paint();
-        paintText.setColor(Color.BLACK);
-        paintText.setTextSize(50f);
+        paintText.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Line));
+        paintText.setTextSize(150f);
         paintText.setTextAlign(Paint.Align.CENTER);
+        paintText.setFakeBoldText(true);
+
+        paintStroke = new Paint();
+        paintStroke.setStyle(Paint.Style.STROKE);
+        paintStroke.setStrokeWidth(20);
+        paintStroke.setColor(ContextCompat.getColor(getContext(), R.color.colorZone1Road));
+        paintStroke.setTextSize(150f);
+        paintStroke.setTextAlign(Paint.Align.CENTER);
+        paintStroke.setFakeBoldText(true);
 
         /* zone 1 */
         paintBG = new Paint();
@@ -154,6 +164,7 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
 
     private Canvas canvas;
     private Bitmap currTree;
+    private String score;
 
     private void draw() {
         try {
@@ -195,8 +206,10 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                         canvas.drawBitmap(currTree, currPoint.x - currTree.getWidth()/2, currPoint.y - currTree.getHeight(), null);
                     }
 
-                    canvas.drawText(""+Math.round(controller.getScore()*10.0)/10.0, width/2, 50, paintText);
-                    canvas.drawText(""+controller.getTreePoints().size(), width/2, 100, paintText);
+                    score = ""+Math.round(controller.getScore()*10.0)/10.0;
+
+                    canvas.drawText(score, width/2 + 2, 200 + 2, paintStroke);
+                    canvas.drawText(score, width/2, 200, paintText);
                 }
             }
         }
