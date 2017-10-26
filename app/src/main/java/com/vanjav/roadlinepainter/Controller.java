@@ -2,6 +2,7 @@ package com.vanjav.roadlinepainter;
 
 import android.content.Context;
 import android.graphics.PointF;
+import android.support.v4.app.INotificationSideChannel;
 
 import java.util.LinkedList;
 import java.util.Random;
@@ -16,7 +17,7 @@ public class Controller {
 
     private int width, height;
     private int crossTime;
-    private float lineWidth, roadWidth;
+    private float lineWidth, roadWidth, outlineWidth;
 
     private Random random;
     private int i;
@@ -24,15 +25,14 @@ public class Controller {
     /* zone 1 */
     private LinkedList<PointF> flowerPoints, treePoints;
     private LinkedList<Integer> treeSizes;
-    private int flowerPointToRemove;
-    private LinkedList<Integer> treePointsToRemove;
-
+    private LinkedList<Integer> treePointsToRemove, flowerPointsToRemove;
+    private float biggestTreeWidth;
 
     public Controller (int width, int height, Context context) {
         linePoints = new LinkedList<PointF>();
         roadPoints = new LinkedList<PointF>();
-        linePointToRemove = 0;
-        roadPointToRemove = 0;
+        firstLinePointToKeep = 0;
+        firstRoadPointToKeep = 0;
         score = 0;
 
         this.width = width;
@@ -40,6 +40,8 @@ public class Controller {
         crossTime = 1000; //1 second
         lineWidth = 20;
         roadWidth = 200;
+        outlineWidth = (float) (roadWidth * 1.75);
+        biggestTreeWidth = 300;
 
         random = new Random();
 
@@ -48,6 +50,7 @@ public class Controller {
         treePoints = new LinkedList<PointF>();
         treeSizes = new LinkedList<Integer>();
         treePointsToRemove = new LinkedList<Integer>();
+        flowerPointsToRemove = new LinkedList<Integer>();
 
         initRoad();
         genRoad();
@@ -88,6 +91,8 @@ public class Controller {
     public float getRoadWidth() {
         return roadWidth;
     }
+
+    public float getOutlineWidth() { return outlineWidth; }
 
     private void updateScore(float x) {
         score += x/1000.0;
@@ -226,108 +231,137 @@ public class Controller {
             prevPoint = roadPoints.get(i - 1);
             currPoint = roadPoints.get(i);
 
-            if (currPoint.y - prevPoint.y == 0) {
-                p1x = prevPoint.x;
-                p1y = prevPoint.y - roadWidth / 2;
-                p2x = currPoint.x;
-                p2y = currPoint.y - roadWidth / 2;
-                p3x = currPoint.x;
-                p3y = currPoint.y + roadWidth / 2;
-                p4x = prevPoint.x;
-                p4y = prevPoint.y + roadWidth / 2;
-            } else {
-                m = -1 * ((currPoint.x - prevPoint.x) / (currPoint.y - prevPoint.y));
-                k = (float) (roadWidth / (2 * Math.sqrt(1 + Math.pow(m, 2))));
-                p1x = prevPoint.x + k;
-                p1y = prevPoint.y + k * m;
-                p2x = currPoint.x + k;
-                p2y = currPoint.y + k * m;
-                p3x = currPoint.x - k;
-                p3y = currPoint.y - k * m;
-                p4x = prevPoint.x - k;
-                p4y = prevPoint.y - k * m;
+            if (x >= prevPoint.x - roadWidth && x <= currPoint.x + roadWidth) {
+                if (currPoint.y - prevPoint.y == 0) {
+                    p1x = prevPoint.x;
+                    p1y = prevPoint.y - roadWidth / 2;
+                    p2x = currPoint.x;
+                    p2y = currPoint.y - roadWidth / 2;
+                    p3x = currPoint.x;
+                    p3y = currPoint.y + roadWidth / 2;
+                    p4x = prevPoint.x;
+                    p4y = prevPoint.y + roadWidth / 2;
+                } else {
+                    m = -1 * ((currPoint.x - prevPoint.x) / (currPoint.y - prevPoint.y));
+                    k = (float) (roadWidth / (2 * Math.sqrt(1 + Math.pow(m, 2))));
+                    p1x = prevPoint.x + k;
+                    p1y = prevPoint.y + k * m;
+                    p2x = currPoint.x + k;
+                    p2y = currPoint.y + k * m;
+                    p3x = currPoint.x - k;
+                    p3y = currPoint.y - k * m;
+                    p4x = prevPoint.x - k;
+                    p4y = prevPoint.y - k * m;
+                }
+
+                float a, b, c, d1, d2, d3, d4;
+
+                a = -1 * (p2y - p1y);
+                b = p2x - p1x;
+                c = -1 * (a * p1x + b * p1y);
+                d1 = a * x + b * y + c;
+
+                a = -1 * (p3y - p2y);
+                b = p3x - p2x;
+                c = -1 * (a * p2x + b * p2y);
+                d2 = a * x + b * y + c;
+
+                a = -1 * (p4y - p3y);
+                b = p4x - p3x;
+                c = -1 * (a * p3x + b * p3y);
+                d3 = a * x + b * y + c;
+
+                a = -1 * (p1y - p4y);
+                b = p1x - p4x;
+                c = -1 * (a * p4x + b * p4y);
+                d4 = a * x + b * y + c;
+
+                if ((d1 >= 0 && d2 >= 0 && d3 >= 0 && d4 >= 0) || (d1 <= 0 && d2 <= 0 && d3 <= 0 && d4 <= 0))
+                    return true;
+
+                if (Math.pow(x - prevPoint.x, 2) + Math.pow(y - prevPoint.y, 2) <= Math.pow(100, 2))
+                    return true;
             }
-
-            float a, b, c, d1, d2, d3, d4;
-
-            a = -1 * (p2y - p1y);
-            b = p2x - p1x;
-            c = -1 * (a * p1x + b * p1y);
-            d1 = a * x + b * y + c;
-
-            a = -1 * (p3y - p2y);
-            b = p3x - p2x;
-            c = -1 * (a * p2x + b * p2y);
-            d2 = a * x + b * y + c;
-
-            a = -1 * (p4y - p3y);
-            b = p4x - p3x;
-            c = -1 * (a * p3x + b * p3y);
-            d3 = a * x + b * y + c;
-
-            a = -1 * (p1y - p4y);
-            b = p1x - p4x;
-            c = -1 * (a * p4x + b * p4y);
-            d4 = a * x + b * y + c;
-
-            if ((d1 >= 0 && d2 >= 0 && d3 >= 0 && d4 >= 0) || (d1 <= 0 && d2 <= 0 && d3 <= 0 && d4 <= 0))
-                return true;
-
-            if (Math.pow(x - prevPoint.x, 2) + Math.pow(y - prevPoint.y, 2) <= Math.pow(100, 2))
-                return true;
         }
 
         return false;
     }
 
-    private int linePointToRemove, roadPointToRemove;
+    private int firstLinePointToKeep, firstRoadPointToKeep;
+    //private LinkedList<Integer> treePointsToRemove, flowerPointsToRemove;
+    private int offsetX;
 
     public boolean update(float deltaTimeMillis) {
         genRoad();
 
         updateScore((float) width*(deltaTimeMillis/crossTime));
 
-        if (roadPoints.size() > 0 && roadPoints.get(0).x < -1*width)
-            roadPoints.subList(0, roadPointToRemove).clear();
+        offsetX = (int) (-1*width*(deltaTimeMillis/crossTime));
 
-        for (i = 0; i < roadPoints.size(); i++) {
-            roadPoints.get(i).offset((int) (-1*width*(deltaTimeMillis/crossTime)), 0);
-            if (roadPoints.get(i).x < -1*width) roadPointToRemove = i;
-        }
+        if (roadPoints.size() > 0) {
+            roadPoints.getFirst().offset(offsetX, 0);
+            firstRoadPointToKeep = 0;
 
-        if (linePoints.size() > 0 && linePoints.get(0).x < -1*width)
-            linePoints.subList(0, linePointToRemove).clear();
+            for (i = 1; i < roadPoints.size(); i++) {
+                currPoint = roadPoints.get(i);
+                currPoint.offset(offsetX, 0);
 
-        for (i = 0; i < linePoints.size(); i++) {
-            linePoints.get(i).offset((int) (-1*width*(deltaTimeMillis/crossTime)), 0);
-            if (linePoints.get(i).x < -1*width) linePointToRemove = i;
+                if (currPoint.x < 0 - outlineWidth)
+                    firstRoadPointToKeep = i - 1;
+            }
+
+            roadPoints.subList(0, firstRoadPointToKeep).clear();
         }
 
         if (flowerPoints.size() > 0) {
-            flowerPoints.subList(0, flowerPointToRemove).clear();
-        }
+            flowerPointsToRemove.clear();
 
-        for (i = 0; i < flowerPoints.size(); i++) {
-            flowerPoints.get(i).offset((int) (-1*width*(deltaTimeMillis/crossTime)), 0);
-            if (flowerPoints.get(i).x < -1*width) flowerPointToRemove = i;
-        }
+            for (i = 0; i < flowerPoints.size(); i++) {
+                currPoint = flowerPoints.get(i);
+                currPoint.offset(offsetX, 0);
 
-        for (i = 0; i < treePoints.size(); i++) {
-            treePoints.get(i).offset((int) (-1*width*(deltaTimeMillis/crossTime)), 0);
-            if (treePoints.get(i).x < -1*width) treePointsToRemove.add(i);
+                if (currPoint.x < 0 - lineWidth)
+                    flowerPointsToRemove.add(i);
+            }
+
+            for (i = 0; i < flowerPointsToRemove.size(); i++)
+                flowerPoints.remove(flowerPointsToRemove.get(i) - i);
         }
 
         if (treePoints.size() > 0) {
+            treePointsToRemove.clear();
+
+            for (i = 0; i < treePoints.size(); i++) {
+                currPoint = treePoints.get(i);
+                currPoint.offset(offsetX, 0);
+
+                if (currPoint.x < 0 - biggestTreeWidth)
+                    treePointsToRemove.add(i);
+            }
+
             for (i = 0; i < treePointsToRemove.size(); i++) {
                 treePoints.remove(treePointsToRemove.get(i) - i);
                 treeSizes.remove(treePointsToRemove.get(i) - i);
             }
+
         }
 
-        treePointsToRemove.clear();
+        if (linePoints.size() > 0) {
+            linePoints.getFirst().offset(offsetX, 0);
+            firstLinePointToKeep = 0;
 
-        if (linePoints.size() > 0)
+            for (i = 1; i < linePoints.size(); i++) {
+                currPoint = linePoints.get(i);
+                currPoint.offset(offsetX, 0);
+
+                if (currPoint.x < 0 - lineWidth)
+                    firstLinePointToKeep = i - 1;
+            }
+
+            linePoints.subList(0, firstLinePointToKeep).clear();
+
             return isPointOnRoad(linePoints.getLast().x, linePoints.getLast().y);
+        }
 
         return false;
     }
