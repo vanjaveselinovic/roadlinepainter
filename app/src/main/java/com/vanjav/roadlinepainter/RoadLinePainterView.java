@@ -188,12 +188,6 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                             canvas.drawLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, paintOutline);
                     }
 
-                    for (i = 1; i < controller.getFlowerPoints().size(); i++) {
-                        currPoint = controller.getFlowerPoints().get(i);
-                        if (currPoint.x < width + lineWidth)
-                            canvas.drawPoint(currPoint.x, currPoint.y, paintLine);
-                    }
-
                     for (i = 1; i < controller.getRoadPoints().size(); i++) {
                         prevPoint = controller.getRoadPoints().get(i-1);
                         currPoint = controller.getRoadPoints().get(i);
@@ -221,10 +215,9 @@ public class RoadLinePainterView extends SurfaceView  implements Choreographer.F
                     canvas.drawText(score, width/2 + 2, 200 + 2, paintStroke);
                     canvas.drawText(score, width/2, 200, paintText);
 
-                    /* debug
+                    /*
                     canvas.drawText("line points: "+controller.getLinePoints().size(), 50, 50, paintDebug);
                     canvas.drawText("road points: "+controller.getRoadPoints().size(), 50, 100, paintDebug);
-                    canvas.drawText("flwr points: "+controller.getFlowerPoints().size(), 50, 150, paintDebug);
                     canvas.drawText("tree points: "+controller.getTreePoints().size(), 50, 200, paintDebug);
                     */
                 }

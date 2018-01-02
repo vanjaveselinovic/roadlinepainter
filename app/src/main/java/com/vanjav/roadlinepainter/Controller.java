@@ -20,12 +20,10 @@ public class Controller {
     private float lineWidth, roadWidth, outlineWidth;
 
     private Random random;
-    private int i;
 
     /* zone 1 */
-    private LinkedList<PointF> flowerPoints;
     private LinkedList<TreePointF> treePoints;
-    private LinkedList<PointF> treePointsToRemove, flowerPointsToRemove;
+    private LinkedList<PointF> treePointsToRemove;
     private float biggestTreeWidth;
 
     public Controller (int width, int height, Context context) {
@@ -37,7 +35,7 @@ public class Controller {
 
         this.width = width;
         this.height = height;
-        crossTime = 1000; //1 second
+        crossTime = 1000; //1000 = 1 second
         lineWidth = 20;
         roadWidth = 200;
         outlineWidth = (float) (roadWidth * 1.75);
@@ -46,10 +44,8 @@ public class Controller {
         random = new Random();
 
         /* zone 1* */
-        flowerPoints = new LinkedList<PointF>();
         treePoints = new LinkedList<TreePointF>();
         treePointsToRemove = new LinkedList<PointF>();
-        flowerPointsToRemove = new LinkedList<PointF>();
 
         initRoad();
         genRoad();
@@ -61,10 +57,6 @@ public class Controller {
 
     public LinkedList<PointF> getRoadPoints() {
         return roadPoints;
-    }
-
-    public LinkedList<PointF> getFlowerPoints() {
-        return flowerPoints;
     }
 
     public LinkedList<TreePointF> getTreePoints() {
@@ -143,7 +135,7 @@ public class Controller {
         }
     }
 
-    private int left, right, mid;
+    private int left, right;
 
     private int binarySearchTreePointListByY(LinkedList<TreePointF> list, float y) {
         if (list.isEmpty()) return 0;
@@ -165,45 +157,15 @@ public class Controller {
     private float addX, addY;
     private int numItemsToAdd;
     private int positionToInsert;
+    private int i;
 
     private void genItems(float x, float y) {
-        //flowers above road
-        numItemsToAdd = random.nextInt(7);
-
-        for (i = 0; i < numItemsToAdd; i++) {
-            flowerPoints.add(new PointF(
-                    x-250 + random.nextFloat()*500,
-                    y+300 + random.nextFloat()*250));
-        }
-
-        //flowers below road
-        numItemsToAdd = random.nextInt(7);
-
-        for (i = 0; i < numItemsToAdd; i++) {
-            flowerPoints.add(new PointF(
-                    x-250 + random.nextFloat()*500,
-                    y-300 - random.nextFloat()*250));
-        }
-
-        //trees above road
-        numItemsToAdd = random.nextInt(3);
+        //trees
+        numItemsToAdd = random.nextInt(5);
 
         for (i = 0; i < numItemsToAdd; i++) {
             addX = x-width/2 + random.nextFloat()*width/2;
-            addY = (float) (y+roadWidth/2 + random.nextFloat()*(1.1*height-y));
-
-            if (!isPointOnRoad(addX, addY)) {
-                positionToInsert = binarySearchTreePointListByY(treePoints, addY);
-                treePoints.add(positionToInsert, new TreePointF(addX, addY, random.nextInt(5)));
-            }
-        }
-
-        //trees below road
-        numItemsToAdd = random.nextInt(3);
-
-        for (i = 0; i < numItemsToAdd; i++) {
-            addX = x-width/2 + random.nextFloat()*width/2;
-            addY = y-roadWidth/2 - random.nextFloat()*y;
+            addY = (float) (random.nextFloat()*1.1*height);
 
             if (!isPointOnRoad(addX, addY)) {
                 positionToInsert = binarySearchTreePointListByY(treePoints, addY);
@@ -215,11 +177,12 @@ public class Controller {
     private PointF prevPoint, currPoint;
     private float p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
     private float k, m;
+    private int j;
 
     private boolean isPointOnRoad(float x, float y) {
-        for (i = 1; i < roadPoints.size(); i++) {
-            prevPoint = roadPoints.get(i - 1);
-            currPoint = roadPoints.get(i);
+        for (j = 1; j < roadPoints.size(); j++) {
+            prevPoint = roadPoints.get(j - 1);
+            currPoint = roadPoints.get(j);
 
             if (x >= prevPoint.x - roadWidth && x <= currPoint.x + roadWidth) {
                 if (currPoint.y - prevPoint.y == 0) {
@@ -277,13 +240,11 @@ public class Controller {
         return false;
     }
 
-    private int firstLinePointToKeep, firstRoadPointToKeep, firstFlowerPointToKeep;
+    private int firstLinePointToKeep, firstRoadPointToKeep;
     //private LinkedList<PointF> treePointsToRemove, flowerPointsToRemove;
     private float offsetX;
     private boolean pointToKeepFound = false;
-
-    Iterator<PointF> flowerPointsIterator;
-    Iterator<TreePointF> treePointsIterator;
+    private int l;
 
     public boolean update(float deltaTimeMillis) {
         genRoad();
@@ -296,67 +257,29 @@ public class Controller {
             roadPoints.getFirst().offset(offsetX, 0);
             firstRoadPointToKeep = 0;
 
-            for (i = 1; i < roadPoints.size(); i++) {
-                currPoint = roadPoints.get(i);
+            for (l = 1; l < roadPoints.size(); l++) {
+                currPoint = roadPoints.get(l);
                 currPoint.offset(offsetX, 0);
 
                 if (currPoint.x < 0 - outlineWidth)
-                    firstRoadPointToKeep = i - 1;
+                    firstRoadPointToKeep = l - 1;
             }
 
             roadPoints.subList(0, firstRoadPointToKeep).clear();
         }
 
-        if (flowerPoints.size() > 0) {
-            /*
-            for (flowerPointsIterator = flowerPoints.iterator(); flowerPointsIterator.hasNext();) {
-                currPoint = flowerPointsIterator.next();
-                currPoint.offset(offsetX, 0);
-
-                if (currPoint.x < 0 - lineWidth)
-                    flowerPointsIterator.remove();
-            }
-            */
-
-            flowerPointsToRemove.clear();
-
-            for (i = 0; i < flowerPoints.size(); i++) {
-                currPoint = flowerPoints.get(i);
-                currPoint.offset(offsetX, 0);
-
-                if (currPoint.x < 0 - width)
-                    flowerPointsToRemove.add(currPoint);
-            }
-
-            for (i = 0; i < flowerPointsToRemove.size(); i++) {
-                flowerPoints.remove(flowerPointsToRemove.get(i));
-            }
-        }
-
         if (treePoints.size() > 0) {
-            /*
-            for (treePointsIterator = treePoints.iterator(); treePointsIterator.hasNext();) {
-                currPoint = treePointsIterator.next();
-                currPoint.offset(offsetX, 0);
-
-                if (currPoint.x < 0 - biggestTreeWidth)
-                    treePointsIterator.remove();
-            }
-            */
-            
             treePointsToRemove.clear();
 
-            for (i = 0; i < treePoints.size(); i++) {
-                currPoint = treePoints.get(i);
+            for (l = 0; l < treePoints.size(); l++) {
+                currPoint = treePoints.get(l);
                 currPoint.offset(offsetX, 0);
 
                 if (currPoint.x < 0 - biggestTreeWidth)
                     treePointsToRemove.add(currPoint);
             }
 
-            for (i = 0; i < treePointsToRemove.size(); i++) {
-                treePoints.remove(treePointsToRemove.get(i));
-            }
+            treePoints.removeAll(treePointsToRemove);
         }
 
         if (linePoints.size() > 0) {
@@ -365,13 +288,13 @@ public class Controller {
             linePoints.getFirst().offset(offsetX, 0);
             firstLinePointToKeep = 0;
 
-            for (i = 1; i < linePoints.size(); i++) {
-                currPoint = linePoints.get(i);
+            for (l = 1; l < linePoints.size(); l++) {
+                currPoint = linePoints.get(l);
                 currPoint.offset(offsetX, 0);
 
                 if (!pointToKeepFound) {
                     if (currPoint.x < 0 - lineWidth) {
-                        firstLinePointToKeep = i - 1;
+                        firstLinePointToKeep = l - 1;
                     } else {
                         pointToKeepFound = true;
                     }
